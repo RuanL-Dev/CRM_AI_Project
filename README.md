@@ -13,10 +13,11 @@ CRM profissional em Java (Spring Boot), tratado como projeto brownfield sob gove
 
 ## Governanca AIOX
 
-- Fonte de verdade: `.aiox-core/constitution.md`
+- Fonte de verdade do projeto: `AGENTS.md` e stories em `docs/stories/`
 - Workflow obrigatorio: story first, acceptance criteria, checklist e file list
-- Story atual: `docs/stories/001-aiox-brownfield-hardening.md`
+- Story atual: `docs/stories/002-repository-boundary-and-slimming.md`
 - Arquitetura brownfield inicial: `docs/architecture/brownfield-baseline.md`
+- Limite entre produto e tooling local: `docs/aiox/repository-boundary.md`
 
 ## Perfis de runtime
 
@@ -104,3 +105,11 @@ Recomendado para a proxima iteracao:
 - checkstyle / spotless
 - spotbugs
 - dependency vulnerability scanning
+
+## Estrutura Mantida No Repo
+
+- `src/`: codigo da aplicacao
+- `docs/`: stories, arquitetura e documentacao operacional
+- `AGENTS.md`: regras AIOX locais do projeto
+
+Artefatos locais de IDE/agentes/framework nao fazem parte do escopo normal deste repositório.
