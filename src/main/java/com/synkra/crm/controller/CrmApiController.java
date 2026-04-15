@@ -10,6 +10,7 @@ import com.synkra.crm.model.DealStage;
 import com.synkra.crm.service.CrmService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,14 @@ public class CrmApiController {
     @GetMapping("/contacts")
     public List<Contact> contacts() {
         return crmService.listContacts();
+    }
+
+    @GetMapping("/security/csrf")
+    public Map<String, String> csrf(CsrfToken token) {
+        return Map.of(
+            "token", token.getToken(),
+            "headerName", token.getHeaderName()
+        );
     }
 
     @ResponseStatus(HttpStatus.CREATED)

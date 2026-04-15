@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -23,14 +24,14 @@ public class SecurityConfig {
                 if (devH2ConsoleEnabled) {
                     auth.requestMatchers("/h2-console/**").permitAll();
                 }
-                auth.requestMatchers("/css/**", "/js/**").authenticated()
+                auth.requestMatchers("/ui/**", "/css/**", "/js/**").authenticated()
                     .requestMatchers("/", "/api/**").authenticated()
                     .anyRequest().authenticated();
             })
             .httpBasic(Customizer.withDefaults())
             .formLogin(Customizer.withDefaults())
             .csrf(csrf -> {
-                csrf.ignoringRequestMatchers("/api/**");
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
                 if (devH2ConsoleEnabled) {
                     csrf.ignoringRequestMatchers("/h2-console/**");
                 }

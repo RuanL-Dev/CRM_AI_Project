@@ -10,6 +10,7 @@
 # Dependencies (AIOX)
 node_modules/
 node_modules
+frontend/node_modules/
 
 # Build & Logs (AIOX)
 dist/
@@ -17,6 +18,8 @@ build/
 target/
 *.log
 logs/
+frontend/.next/
+frontend/out/
 
 # IDE & OS (AIOX)
 .DS_Store

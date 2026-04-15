@@ -11,6 +11,9 @@
 <p align="center">
   <img alt="Java" src="https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white"/>
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white"/>
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-15-111827?style=flat-square&logo=nextdotjs&logoColor=white"/>
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white"/>
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql&logoColor=white"/>
   <img alt="Maven" src="https://img.shields.io/badge/Maven-Build-C71A36?style=flat-square&logo=apachemaven&logoColor=white"/>
   <img alt="N8N" src="https://img.shields.io/badge/N8N-Integrated-EA4B71?style=flat-square&logo=n8n&logoColor=white"/>
   <img alt="AIOX" src="https://img.shields.io/badge/AIOX-Governed-2563EB?style=flat-square"/>
@@ -22,7 +25,7 @@
 
 O **CRM AI Project** e uma base de CRM voltada para operacoes comerciais que precisam centralizar contatos, deals, atividades e automacoes externas. O repositorio foi iniciado com apoio do Codex e esta sendo profissionalizado sob as diretrizes do **AIOX**, com foco em qualidade, rastreabilidade e evolucao segura.
 
-Na implementacao atual, o projeto entrega uma API REST e um dashboard web server-rendered em **Java 17 + Spring Boot**, com persistencia bootstrap em **H2**, autenticacao basica e envio de eventos para o **N8N**.
+Na implementacao atual, o projeto entrega uma API REST em **Java 17 + Spring Boot**, um frontend em **Next.js + React + Tailwind CSS**, autenticacao basica e envio de eventos para o **N8N**. Em runtime, a persistencia passa a ser **PostgreSQL**, enquanto o **H2** fica restrito aos testes automatizados.
 
 ---
 
@@ -55,25 +58,24 @@ Na implementacao atual, o projeto entrega uma API REST e um dashboard web server
 | Linguagem | Java 17 |
 | Framework backend | Spring Boot |
 | API | Spring Web |
-| Persistencia atual | Spring Data JPA + H2 |
+| Persistencia de runtime | Spring Data JPA + PostgreSQL |
+| Migracoes | Flyway |
 | Seguranca | Spring Security |
-| Frontend atual | Thymeleaf + JavaScript |
-| Estilizacao atual | CSS customizado |
+| Frontend | Next.js + React |
+| Estilizacao | Tailwind CSS |
 | Build | Maven |
-| Testes | JUnit + Spring Boot Test |
+| Testes | JUnit + Mockito + Spring Boot Test |
 | Integracao | N8N via webhook HTTP |
 
-## Stack Alvo de Producao
+## Stack de Testes
 
-| Camada | Tecnologia planejada |
-|--------|----------------------|
-| Frontend | React.js |
-| Estilizacao | Tailwind CSS |
-| Backend | Java + Spring Boot |
-| Banco de dados de producao | PostgreSQL |
-| Automacao | N8N |
+| Camada | Tecnologia |
+|--------|------------|
+| Banco de testes | H2 |
+| Testes unitarios | JUnit + Mockito |
+| Testes de integracao | Spring Boot Test + MockMvc |
 
-Importante: **React.js**, **Tailwind CSS** e **PostgreSQL** representam a direcao de producao desejada. O estado atual do repositorio ainda utiliza frontend server-rendered e **H2** como persistencia de bootstrap.
+Importante: o **H2** foi mantido exclusivamente para os testes unitarios e de integracao. O runtime principal da aplicacao passa a usar **PostgreSQL**.
 
 ---
 
@@ -91,8 +93,8 @@ crm-n8n-java/
 |   |   |   |-- repository/    # Repositorios JPA
 |   |   |   `-- service/       # Regras de negocio e integracao N8N
 |   |   `-- resources/
-|   |       |-- static/        # CSS e JavaScript do dashboard atual
-|   |       |-- templates/     # Views server-rendered
+|   |       |-- static/ui/     # Export estatico do frontend Next.js
+|   |       |-- db/migration/  # Migracoes Flyway para PostgreSQL
 |   |       `-- application*.yml
 |   `-- test/                  # Testes de aplicacao e seguranca
 |-- docs/
@@ -100,6 +102,7 @@ crm-n8n-java/
 |   |-- aiox/
 |   |-- framework/
 |   `-- stories/
+|-- frontend/                  # Workspace Next.js + React + Tailwind
 |-- AGENTS.md
 `-- pom.xml
 ```
@@ -120,22 +123,29 @@ crm-n8n-java/
 
 - Java 17+
 - Maven 3.9+
+- Node.js 20+
+- NPM 10+
+- PostgreSQL 16+
 
 ### Rodando localmente
 
 ```bash
+cd frontend
+npm install
+npm run build
+
+cd ..
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 Acessos locais:
 
 - Aplicacao: `http://localhost:8080`
-- Console H2: `http://localhost:8080/h2-console`
 
 ### Perfis de runtime
 
-- `dev` - H2 em memoria, console H2 habilitado e `ddl-auto=update`
-- `default` - configuracao mais segura, sem console H2 e com `ddl-auto=validate`
+- `dev` - PostgreSQL com logs SQL habilitados
+- `default` - PostgreSQL com `ddl-auto=validate`
 - `test` - H2 isolado para testes automatizados
 
 ---
@@ -147,6 +157,9 @@ Credenciais iniciais:
 ```env
 CRM_USERNAME=admin
 CRM_PASSWORD=change-me-now
+CRM_DATASOURCE_URL=jdbc:postgresql://localhost:5432/crm_ai_project
+CRM_DATASOURCE_USERNAME=crm_app
+CRM_DATASOURCE_PASSWORD=crm_app
 ```
 
 Integracao com N8N:
@@ -217,6 +230,7 @@ Testes presentes na base:
 
 - smoke test da aplicacao
 - testes de integracao de seguranca da API
+- testes unitarios de servico com Mockito
 
 ---
 
@@ -239,13 +253,14 @@ Referencias principais:
 - `docs/stories/002-repository-boundary-and-slimming.md`
 - `docs/stories/003-professional-readme-refresh.md`
 - `docs/stories/004-readme-presentation-alignment.md`
+- `docs/stories/005-nextjs-postgres-runtime.md`
 
 ---
 
 ## Roadmap
 
-- [ ] Migrar a persistencia de bootstrap para PostgreSQL
-- [ ] Introduzir frontend React.js com Tailwind CSS
+- [x] Migrar o runtime para PostgreSQL
+- [x] Substituir o dashboard por Next.js + React + Tailwind CSS
 - [ ] Formalizar DTOs de resposta e paginacao da API
 - [ ] Consolidar migracoes para ambientes persistentes
 - [ ] Ampliar observabilidade, seguranca e cobertura de testes
@@ -254,7 +269,7 @@ Referencias principais:
 
 ## Status do Projeto
 
-O projeto ja possui uma baseline funcional com API, dashboard, seguranca inicial e integracao com N8N. A etapa atual e de amadurecimento estrutural, mantendo a implementacao existente enquanto a arquitetura evolui para uma stack de producao com **React.js**, **Tailwind CSS** e **PostgreSQL**.
+O projeto agora possui uma baseline funcional com API Spring Boot, frontend em **Next.js + React**, seguranca inicial, integracao com **N8N** e runtime em **PostgreSQL**. A etapa atual passa a ser o endurecimento dessa base com contratos de API, migracoes adicionais, observabilidade e mais cobertura automatizada.
 
 ---
 

@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body antialiased text-slate-900;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyanbrand focus:bg-white focus:ring-4 focus:ring-cyanbrand/10;
+  }
+
+  .primary-button {
+    @apply inline-flex w-full items-center justify-center rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-cyanbrand;
+  }
+
+  .table-shell {
+    @apply overflow-hidden rounded-3xl border border-slate-200;
+  }
+
+  .data-table {
+    @apply min-w-full border-collapse bg-white text-left text-sm;
+  }
+
+  .data-table thead {
+    @apply bg-slate-100 text-xs uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .data-table th,
+  .data-table td {
+    @apply px-4 py-3 align-top;
+  }
+
+  .data-table tbody tr {
+    @apply border-t border-slate-100;
+  }
+}
