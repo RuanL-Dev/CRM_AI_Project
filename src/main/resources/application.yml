@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: crm-n8n-java
+  datasource:
+    url: ${CRM_DATASOURCE_URL:jdbc:h2:file:./target/crmdb;MODE=PostgreSQL;AUTO_SERVER=TRUE}
+    username: ${CRM_DATASOURCE_USERNAME:sa}
+    password: ${CRM_DATASOURCE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+server:
+  port: 8080
+
+n8n:
+  webhook-url: ${N8N_WEBHOOK_URL:}
+  connect-timeout-ms: ${N8N_CONNECT_TIMEOUT_MS:2000}
+  read-timeout-ms: ${N8N_READ_TIMEOUT_MS:5000}
+
+app:
+  security:
+    username: ${CRM_USERNAME:admin}
+    password: ${CRM_PASSWORD:change-me-now}
+    dev-h2-console-enabled: false

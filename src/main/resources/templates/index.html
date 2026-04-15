@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon CRM - AIOX + N8N</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="orb orb-cyan"></div>
+<div class="orb orb-amber"></div>
+
+<main class="shell">
+    <header class="hero">
+        <div>
+            <p class="kicker">AIOX ENTERPRISE MODE</p>
+            <h1>Neon CRM</h1>
+            <p class="subtitle">CRM Java com pipeline comercial em tempo real e integração webhook para automações N8N.</p>
+        </div>
+        <div class="badge">N8N READY</div>
+    </header>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="grid">
+        <article class="panel">
+            <h2>Novo Contato</h2>
+            <form id="contactForm">
+                <input name="name" placeholder="Nome" required>
+                <input name="email" type="email" placeholder="Email" required>
+                <input name="phone" placeholder="Telefone">
+                <input name="company" placeholder="Empresa">
+                <select name="status">
+                    <option value="LEAD">Lead</option>
+                    <option value="QUALIFIED">Qualified</option>
+                    <option value="CUSTOMER">Customer</option>
+                </select>
+                <button type="submit">Criar Contato</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <h2>Novo Deal</h2>
+            <form id="dealForm">
+                <input name="title" placeholder="Titulo do deal" required>
+                <input name="value" type="number" min="0" step="0.01" placeholder="Valor" required>
+                <select name="stage">
+                    <option value="PROSPECTING">Prospecting</option>
+                    <option value="PROPOSAL">Proposal</option>
+                    <option value="NEGOTIATION">Negotiation</option>
+                    <option value="WON">Won</option>
+                    <option value="LOST">Lost</option>
+                </select>
+                <input name="expectedCloseDate" type="date">
+                <input name="contactId" type="number" min="1" placeholder="ID do contato" required>
+                <button type="submit">Criar Deal</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <h2>Nova Atividade</h2>
+            <form id="activityForm">
+                <select name="type">
+                    <option value="CALL">Call</option>
+                    <option value="EMAIL">Email</option>
+                    <option value="MEETING">Meeting</option>
+                    <option value="TASK">Task</option>
+                </select>
+                <input name="notes" placeholder="Notas" required>
+                <input name="dueAt" type="datetime-local">
+                <input name="contactId" type="number" min="1" placeholder="ID do contato" required>
+                <button type="submit">Criar Atividade</button>
+            </form>
+        </article>
+    </section>
+
+    <section class="tables">
+        <article class="panel">
+            <h2>Contatos</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Nome</th><th>Email</th><th>Status</th><th>Empresa</th></tr>
+                    </thead>
+                    <tbody id="contactsTable"></tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Deals</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Titulo</th><th>Valor</th><th>Stage</th><th>Contato</th></tr>
+                    </thead>
+                    <tbody id="dealsTable"></tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Atividades</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Tipo</th><th>Notas</th><th>Prazo</th><th>Contato</th></tr>
+                    </thead>
+                    <tbody id="activitiesTable"></tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+</main>
+
+<script src="/js/app.js" defer></script>
+</body>
+</html>
