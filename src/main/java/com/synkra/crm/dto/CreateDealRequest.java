@@ -9,10 +9,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record CreateDealRequest(
-    @NotBlank String title,
-    @NotNull @DecimalMin("0.0") BigDecimal value,
+    @NotBlank(message = "titulo: informe o nome da oportunidade") String title,
+    @NotNull(message = "valor: informe o valor da oportunidade")
+    @DecimalMin(value = "0.0", message = "valor: informe um valor igual ou maior que zero") BigDecimal value,
     DealStage stage,
     LocalDate expectedCloseDate,
-    @NotNull Long contactId
+    @NotNull(message = "contato: selecione um contato para a oportunidade") Long contactId
 ) {
 }

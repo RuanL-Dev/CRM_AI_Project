@@ -28,6 +28,8 @@ n8n:
   read-timeout-ms: ${N8N_READ_TIMEOUT_MS:5000}
 
 app:
+  seed-demo-data:
+    enabled: false
   security:
     username: ${CRM_USERNAME:admin}
     password: ${CRM_PASSWORD:change-me-now}

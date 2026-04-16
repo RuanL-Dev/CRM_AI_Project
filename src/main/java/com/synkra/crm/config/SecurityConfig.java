@@ -24,14 +24,24 @@ public class SecurityConfig {
                 if (devH2ConsoleEnabled) {
                     auth.requestMatchers("/h2-console/**").permitAll();
                 }
-                auth.requestMatchers("/ui/**", "/css/**", "/js/**").authenticated()
+                auth.requestMatchers("/login", "/auth/**").permitAll()
+                    .requestMatchers("/ui/**", "/css/**", "/js/**").authenticated()
                     .requestMatchers("/", "/api/**").authenticated()
                     .anyRequest().authenticated();
             })
             .httpBasic(Customizer.withDefaults())
-            .formLogin(Customizer.withDefaults())
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
+                .failureUrl("/login?error")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout")
+            )
             .csrf(csrf -> {
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                csrf.ignoringRequestMatchers("/login");
                 if (devH2ConsoleEnabled) {
                     csrf.ignoringRequestMatchers("/h2-console/**");
                 }

@@ -5,8 +5,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateContactRequest(
-    @NotBlank String name,
-    @Email @NotBlank String email,
+    @NotBlank(message = "nome: informe o nome do contato") String name,
+    @Email(message = "email: informe um e-mail válido")
+    @NotBlank(message = "email: informe o e-mail do contato") String email,
     String phone,
     String company,
     ContactStatus status

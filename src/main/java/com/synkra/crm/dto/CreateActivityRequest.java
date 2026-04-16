@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 
 public record CreateActivityRequest(
-    @NotNull ActivityType type,
-    @NotBlank String notes,
+    @NotNull(message = "tipo: selecione o tipo da atividade") ActivityType type,
+    @NotBlank(message = "notas: descreva a atividade") String notes,
     Instant dueAt,
-    @NotNull Long contactId
+    @NotNull(message = "contato: selecione um contato para a atividade") Long contactId
 ) {
 }

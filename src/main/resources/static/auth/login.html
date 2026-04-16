@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | Painel Comercial</title>
+    <link rel="stylesheet" href="/auth/login.css">
+</head>
+<body>
+<main class="login-shell">
+    <section class="login-card">
+        <div class="login-grid">
+            <div class="brand-block">
+                <span class="eyebrow">Central de inteligência comercial</span>
+                <h1>Acesse sua operação de vendas</h1>
+                <p>
+                    Visualize leads, pipeline, atividades e receita em um único ambiente. Entre para acompanhar o ritmo comercial e agir com prioridade.
+                </p>
+            </div>
+
+            <div class="insight-strip">
+                <div class="insight-card">
+                    <strong>Leitura rápida do funil</strong>
+                    <span>Monitore distribuição das oportunidades, conversão e receita projetada com clareza visual.</span>
+                </div>
+                <div class="insight-card">
+                    <strong>Cadência operacional viva</strong>
+                    <span>Registre contatos, atividades e negociações com atualização imediata do dashboard.</span>
+                </div>
+                <div class="insight-card">
+                    <strong>Contexto comercial contínuo</strong>
+                    <span>Mantenha a equipe orientada pelas próximas ações e pela evolução dos registros no banco.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-form-shell">
+            <h2>Entrar no CRM</h2>
+            <p>Use suas credenciais para abrir o painel e continuar o acompanhamento da operação.</p>
+
+            <form class="login-form" method="post" action="/login">
+                <label>
+                    <span>Usuário</span>
+                    <input type="text" name="username" placeholder="Digite seu usuário" autocomplete="username" required>
+                </label>
+
+                <label>
+                    <span>Senha</span>
+                    <input type="password" name="password" placeholder="Digite sua senha" autocomplete="current-password" required>
+                </label>
+
+                <button type="submit">Entrar</button>
+            </form>
+
+            <div class="message error" id="errorMessage" hidden>
+                Não foi possível entrar com esses dados. Revise usuário e senha e tente novamente.
+            </div>
+
+            <div class="message success" id="logoutMessage" hidden>
+                Sessão encerrada com sucesso.
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const errorMessage = document.getElementById("errorMessage");
+    const logoutMessage = document.getElementById("logoutMessage");
+
+    if (params.has("error")) {
+        errorMessage.hidden = false;
+    }
+
+    if (params.has("logout")) {
+        logoutMessage.hidden = false;
+    }
+</script>
+</body>
+</html>

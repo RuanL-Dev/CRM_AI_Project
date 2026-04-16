@@ -6,5 +6,7 @@ spring:
     show-sql: true
 
 app:
+  seed-demo-data:
+    enabled: true
   security:
     dev-h2-console-enabled: false

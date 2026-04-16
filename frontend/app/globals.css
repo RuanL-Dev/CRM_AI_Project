@@ -5,30 +5,293 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   body {
-    @apply font-body antialiased text-slate-900;
+    @apply min-h-screen bg-[#020617] font-body text-slate-100 antialiased;
+    background-image:
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 32%),
+      radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 28%),
+      linear-gradient(180deg, #020617 0%, #020b1d 100%);
   }
 }
 
 @layer components {
+  .dashboard-shell {
+    @apply min-h-screen;
+  }
+
+  .dashboard-grid {
+    @apply mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+  }
+
+  .hero-panel,
+  .panel,
+  .metric-card {
+    @apply overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl;
+    box-shadow: 0 24px 80px rgba(2, 6, 23, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .hero-panel {
+    @apply grid gap-6 rounded-[34px] px-6 py-7 lg:grid-cols-[1.3fr_0.9fr] lg:px-8 lg:py-8;
+    background:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.2), transparent 32%),
+      radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.18), transparent 28%),
+      rgba(15, 23, 42, 0.82);
+  }
+
+  .hero-copy {
+    @apply max-w-3xl;
+  }
+
+  .hero-kicker,
+  .panel-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.32em] text-cyan-300;
+  }
+
+  .hero-title {
+    @apply mt-4 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl;
+  }
+
+  .hero-description {
+    @apply mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base;
+  }
+
+  .hero-highlights {
+    @apply grid gap-3 sm:grid-cols-3 lg:grid-cols-1;
+  }
+
+  .hero-chip {
+    @apply rounded-[28px] border border-white/10 bg-slate-950/40 p-4;
+  }
+
+  .hero-chip-label {
+    @apply text-xs uppercase tracking-[0.2em] text-slate-400;
+  }
+
+  .hero-chip-value {
+    @apply mt-3 block font-display text-2xl font-semibold text-white;
+  }
+
+  .feedback-banner {
+    @apply rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100;
+  }
+
+  .feedback-banner-error {
+    @apply border-rose-400/30 bg-rose-400/10 text-rose-100;
+  }
+
+  .metric-grid {
+    @apply grid gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .metric-card {
+    @apply rounded-[28px] p-5;
+  }
+
+  .metric-card-cyan {
+    background: linear-gradient(180deg, rgba(14, 116, 144, 0.24), rgba(15, 23, 42, 0.72));
+  }
+
+  .metric-card-violet {
+    background: linear-gradient(180deg, rgba(91, 33, 182, 0.22), rgba(15, 23, 42, 0.72));
+  }
+
+  .metric-card-teal {
+    background: linear-gradient(180deg, rgba(13, 148, 136, 0.22), rgba(15, 23, 42, 0.72));
+  }
+
+  .metric-card-green {
+    background: linear-gradient(180deg, rgba(22, 163, 74, 0.2), rgba(15, 23, 42, 0.72));
+  }
+
+  .metric-label {
+    @apply text-xs font-medium uppercase tracking-[0.24em] text-slate-400;
+  }
+
+  .metric-value {
+    @apply mt-3 font-display text-4xl font-bold text-white;
+  }
+
+  .metric-detail {
+    @apply mt-3 text-sm leading-6 text-slate-300;
+  }
+
+  .insight-grid {
+    @apply grid gap-6 xl:grid-cols-2;
+  }
+
+  .analytics-grid {
+    @apply grid gap-6 xl:grid-cols-2;
+  }
+
+  .operations-grid {
+    @apply grid gap-6 lg:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .table-grid {
+    @apply grid gap-6 xl:grid-cols-2;
+  }
+
+  .panel {
+    @apply rounded-[30px] p-6;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.72));
+  }
+
+  .panel-secondary {
+    background:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 30%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.78));
+  }
+
+  .panel-title {
+    @apply mt-2 font-display text-2xl font-semibold text-white;
+  }
+
+  .panel-description {
+    @apply mt-2 text-sm leading-6 text-slate-400;
+  }
+
+  .chart-block {
+    @apply rounded-[24px] border border-white/5 bg-slate-950/30 p-3;
+  }
+
+  .chart-svg {
+    @apply h-auto w-full;
+  }
+
+  .chart-grid-line {
+    stroke: rgba(148, 163, 184, 0.18);
+    stroke-width: 1;
+  }
+
+  .chart-axis-label {
+    fill: rgba(148, 163, 184, 0.75);
+    font-size: 12px;
+  }
+
+  .bar-chart {
+    @apply flex h-[270px] items-end justify-between gap-3 rounded-[24px] border border-white/5 bg-slate-950/30 p-4;
+  }
+
+  .bar-column {
+    @apply flex min-w-0 flex-1 flex-col items-center gap-2;
+  }
+
+  .bar-track {
+    @apply flex h-44 w-full items-end rounded-full border border-cyan-400/10 bg-slate-900/70 p-1;
+  }
+
+  .bar-fill {
+    @apply w-full rounded-full;
+    background: linear-gradient(180deg, #67e8f9 0%, #8b5cf6 100%);
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+  }
+
+  .bar-value,
+  .bar-label {
+    @apply text-xs text-slate-400;
+  }
+
+  .donut-layout {
+    @apply grid gap-5 xl:grid-cols-[220px_minmax(0,1fr)] xl:items-center;
+  }
+
+  .donut-shell {
+    @apply relative mx-auto flex h-[208px] w-[208px] items-center justify-center;
+  }
+
+  .donut-svg {
+    @apply h-[208px] w-[208px] -rotate-90;
+  }
+
+  .donut-base {
+    fill: none;
+    stroke: rgba(71, 85, 105, 0.28);
+    stroke-width: 18;
+  }
+
+  .donut-segment {
+    fill: none;
+    stroke-width: 18;
+    stroke-linecap: round;
+  }
+
+  .donut-center {
+    @apply absolute flex flex-col items-center justify-center;
+  }
+
+  .donut-total {
+    @apply font-display text-3xl font-bold text-white;
+  }
+
+  .donut-label {
+    @apply text-xs uppercase tracking-[0.18em] text-slate-400;
+  }
+
+  .legend-list,
+  .status-grid,
+  .priority-list,
+  .form-stack {
+    @apply space-y-3;
+  }
+
+  .legend-list {
+    @apply min-w-0;
+  }
+
+  .legend-row,
+  .status-row {
+    @apply flex items-center justify-between gap-3 rounded-2xl border border-white/5 bg-slate-950/30 px-4 py-3 text-sm text-slate-200;
+  }
+
+  .legend-row {
+    @apply items-start flex-wrap;
+  }
+
+  .legend-dot {
+    @apply inline-flex h-2.5 w-2.5 shrink-0 rounded-full;
+  }
+
+  .legend-text {
+    @apply min-w-0 flex-1 break-words text-slate-300;
+  }
+
+  .legend-value {
+    @apply shrink-0 pt-0.5 font-semibold text-white;
+  }
+
+  .priority-list li {
+    @apply rounded-2xl border border-white/5 bg-slate-950/30 px-4 py-3 text-sm leading-6 text-slate-300;
+  }
+
   .field {
-    @apply w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyanbrand focus:bg-white focus:ring-4 focus:ring-cyanbrand/10;
+    @apply w-full rounded-2xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10;
   }
 
   .primary-button {
-    @apply inline-flex w-full items-center justify-center rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-cyanbrand;
+    @apply inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold text-slate-950 transition hover:brightness-110;
+    background: linear-gradient(90deg, #67e8f9 0%, #8b5cf6 100%);
+    box-shadow: 0 16px 36px rgba(56, 189, 248, 0.22);
+  }
+
+  .field:disabled,
+  .primary-button:disabled {
+    @apply cursor-not-allowed opacity-60;
   }
 
   .table-shell {
-    @apply overflow-hidden rounded-3xl border border-slate-200;
+    @apply overflow-hidden rounded-[24px] border border-white/5 bg-slate-950/30;
   }
 
   .data-table {
-    @apply min-w-full border-collapse bg-white text-left text-sm;
+    @apply min-w-full border-collapse text-left text-sm text-slate-200;
   }
 
   .data-table thead {
-    @apply bg-slate-100 text-xs uppercase tracking-[0.18em] text-slate-500;
+    @apply bg-white/5 text-xs uppercase tracking-[0.18em] text-slate-400;
   }
 
   .data-table th,
@@ -37,6 +300,18 @@
   }
 
   .data-table tbody tr {
-    @apply border-t border-slate-100;
+    @apply border-t border-white/5;
+  }
+
+  .table-title {
+    @apply font-medium text-white;
+  }
+
+  .table-caption {
+    @apply text-xs text-slate-400;
+  }
+
+  .empty-state {
+    @apply text-sm text-slate-500;
   }
 }
