@@ -4,6 +4,7 @@
 .env
 .env.local
 .env.*.local
+deploy/.env
 *.key
 *.pem
 

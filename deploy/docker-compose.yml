@@ -1,0 +1,39 @@
+services:
+  crm-postgres:
+    image: postgres:16-alpine
+    container_name: crm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CRM_POSTGRES_DB}
+      POSTGRES_USER: ${CRM_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CRM_POSTGRES_PASSWORD}
+    volumes:
+      - crm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CRM_POSTGRES_USER} -d ${CRM_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  crm-app:
+    image: eclipse-temurin:17-jre-alpine
+    container_name: crm-app
+    restart: unless-stopped
+    depends_on:
+      crm-postgres:
+        condition: service_healthy
+    environment:
+      CRM_DATASOURCE_URL: jdbc:postgresql://crm-postgres:5432/${CRM_POSTGRES_DB}
+      CRM_DATASOURCE_USERNAME: ${CRM_POSTGRES_USER}
+      CRM_DATASOURCE_PASSWORD: ${CRM_POSTGRES_PASSWORD}
+      CRM_USERNAME: ${CRM_APP_USERNAME}
+      CRM_PASSWORD: ${CRM_APP_PASSWORD}
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+    volumes:
+      - ./crm-n8n-java-0.1.0.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar", "--spring.profiles.active=${CRM_APP_PROFILE:-dev}", "--server.port=8081"]
+    ports:
+      - "127.0.0.1:8081:8081"
+
+volumes:
+  crm_postgres_data:

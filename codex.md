@@ -95,6 +95,19 @@ Variáveis importantes:
 - `CRM_PASSWORD`
 - `N8N_WEBHOOK_URL`
 
+## Deploy
+
+Deploy versionado:
+- `deploy/docker-compose.yml`
+- `deploy/.env.example`
+- `deploy/Caddyfile`
+- `deploy/README.md`
+
+Regras do deploy:
+- credenciais reais nao sao versionadas
+- a aplicacao publica em `127.0.0.1:8081`
+- o dominio publico deve ser roteado por Caddy no host
+
 ## Execução Local
 
 Frontend:
