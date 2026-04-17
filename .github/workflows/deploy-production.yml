@@ -142,8 +142,13 @@ jobs:
           DEPLOY_PORT="${CRM_DEPLOY_PORT:-22}"
           ssh -p "${DEPLOY_PORT}" "${CRM_DEPLOY_USER}@${CRM_DEPLOY_HOST}" "
             cd '${CRM_DEPLOY_PATH}' &&
-            docker compose up -d --force-recreate crm-postgres crm-app &&
-            docker compose ps
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE_CMD='docker compose'
+            else
+              COMPOSE_CMD='docker-compose'
+            fi &&
+            \$COMPOSE_CMD up -d --force-recreate crm-postgres crm-app &&
+            \$COMPOSE_CMD ps
           "
 
       - name: Validate login endpoint
