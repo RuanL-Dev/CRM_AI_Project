@@ -151,6 +151,25 @@ jobs:
             \$COMPOSE_CMD ps
           "
 
+      - name: Wait for upstream application
+        shell: bash
+        env:
+          CRM_DEPLOY_HOST: ${{ secrets.CRM_DEPLOY_HOST }}
+          CRM_DEPLOY_PORT: ${{ secrets.CRM_DEPLOY_PORT }}
+          CRM_DEPLOY_USER: ${{ secrets.CRM_DEPLOY_USER }}
+        run: |
+          DEPLOY_PORT="${CRM_DEPLOY_PORT:-22}"
+          ssh -p "${DEPLOY_PORT}" "${CRM_DEPLOY_USER}@${CRM_DEPLOY_HOST}" '
+            for attempt in $(seq 1 24); do
+              if curl --fail --silent http://127.0.0.1:8081/login | grep -q "Entrar | Painel Comercial"; then
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "Application did not become ready on http://127.0.0.1:8081/login" >&2
+            exit 1
+          '
+
       - name: Validate login endpoint
         shell: bash
         env:
@@ -160,7 +179,14 @@ jobs:
             echo "Missing required GitHub secret: CRM_PUBLIC_LOGIN_URL" >&2
             exit 1
           fi
-          curl --fail --show-error --silent --location "${CRM_PUBLIC_LOGIN_URL}" | grep -q "Entrar | Painel Comercial"
+          for attempt in $(seq 1 24); do
+            if curl --fail --show-error --silent --location "${CRM_PUBLIC_LOGIN_URL}" | grep -q "Entrar | Painel Comercial"; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Public login endpoint did not become ready: ${CRM_PUBLIC_LOGIN_URL}" >&2
+          exit 1
 
       - name: Remove generated production env file
         if: always()
