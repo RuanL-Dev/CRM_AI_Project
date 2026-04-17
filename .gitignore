@@ -36,7 +36,12 @@ Thumbs.db
 .codex/
 .cursor/
 .gemini/
-.github/
+.github/*
+!.github/workflows/
+!.github/workflows/**
+!.github/agents/
+!.github/agents/**
+!.github/copilot-instructions.md
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt

@@ -28,7 +28,13 @@ services:
       CRM_DATASOURCE_PASSWORD: ${CRM_POSTGRES_PASSWORD}
       CRM_USERNAME: ${CRM_APP_USERNAME}
       CRM_PASSWORD: ${CRM_APP_PASSWORD}
+      CRM_BOOTSTRAP_ENABLED: ${CRM_BOOTSTRAP_ENABLED:-true}
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+      N8N_CONNECT_TIMEOUT_MS: ${N8N_CONNECT_TIMEOUT_MS:-2000}
+      N8N_READ_TIMEOUT_MS: ${N8N_READ_TIMEOUT_MS:-5000}
+      N8N_RETRY_DELAY_MS: ${N8N_RETRY_DELAY_MS:-30000}
+      N8N_RETRY_SCHEDULER_DELAY_MS: ${N8N_RETRY_SCHEDULER_DELAY_MS:-30000}
+      N8N_MAX_ATTEMPTS: ${N8N_MAX_ATTEMPTS:-5}
     volumes:
       - ./crm-n8n-java-0.1.0.jar:/app/app.jar:ro
     command: ["java", "-jar", "/app/app.jar", "--spring.profiles.active=${CRM_APP_PROFILE:-dev}", "--server.port=8081"]
