@@ -1,12 +1,20 @@
 package com.synkra.crm.service;
 
+import com.synkra.crm.dto.ActivityResponse;
+import com.synkra.crm.dto.ContactResponse;
 import com.synkra.crm.dto.CreateActivityRequest;
 import com.synkra.crm.dto.CreateContactRequest;
 import com.synkra.crm.dto.CreateDealRequest;
+import com.synkra.crm.dto.DashboardMetricsResponse;
+import com.synkra.crm.dto.DashboardTimelineItemResponse;
+import com.synkra.crm.dto.DealResponse;
 import com.synkra.crm.model.*;
+import com.synkra.crm.repository.ActivityTypeCountView;
 import com.synkra.crm.repository.ActivityRepository;
 import com.synkra.crm.repository.ContactRepository;
+import com.synkra.crm.repository.ContactStatusCountView;
 import com.synkra.crm.repository.DealRepository;
+import com.synkra.crm.repository.DealStageValueView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -15,6 +23,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -44,20 +53,29 @@ public class CrmService {
         this.n8nWebhookService = n8nWebhookService;
     }
 
-    public List<Contact> listContacts() {
-        return contactRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ContactResponse> listContacts() {
+        return contactRepository.findAll().stream()
+            .map(ContactResponse::from)
+            .toList();
     }
 
-    public List<Deal> listDeals() {
-        return dealRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<DealResponse> listDeals() {
+        return dealRepository.findAll().stream()
+            .map(DealResponse::from)
+            .toList();
     }
 
-    public List<Activity> listActivities() {
-        return activityRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ActivityResponse> listActivities() {
+        return activityRepository.findAll().stream()
+            .map(ActivityResponse::from)
+            .toList();
     }
 
     @Transactional
-    public Contact createContact(CreateContactRequest request) {
+    public ContactResponse createContact(CreateContactRequest request) {
         Contact contact = new Contact();
         contact.setName(request.name());
         contact.setEmail(request.email());
@@ -67,11 +85,11 @@ public class CrmService {
 
         Contact saved = contactRepository.save(contact);
         publishAfterCommit("contact.created", saved);
-        return saved;
+        return ContactResponse.from(saved);
     }
 
     @Transactional
-    public Deal createDeal(CreateDealRequest request) {
+    public DealResponse createDeal(CreateDealRequest request) {
         Contact contact = contactRepository.findById(request.contactId())
             .orElseThrow(() -> new NoSuchElementException("Contato não encontrado: " + request.contactId()));
 
@@ -84,22 +102,22 @@ public class CrmService {
 
         Deal saved = dealRepository.save(deal);
         publishAfterCommit("deal.created", saved);
-        return saved;
+        return DealResponse.from(saved);
     }
 
     @Transactional
-    public Deal updateDealStage(Long dealId, DealStage stage) {
+    public DealResponse updateDealStage(Long dealId, DealStage stage) {
         Deal deal = dealRepository.findById(dealId)
             .orElseThrow(() -> new NoSuchElementException("Oportunidade não encontrada: " + dealId));
 
         deal.setStage(stage);
         Deal saved = dealRepository.save(deal);
         publishAfterCommit("deal.stage.updated", saved);
-        return saved;
+        return DealResponse.from(saved);
     }
 
     @Transactional
-    public Activity createActivity(CreateActivityRequest request) {
+    public ActivityResponse createActivity(CreateActivityRequest request) {
         Contact contact = contactRepository.findById(request.contactId())
             .orElseThrow(() -> new NoSuchElementException("Contato não encontrado: " + request.contactId()));
 
@@ -111,52 +129,42 @@ public class CrmService {
 
         Activity saved = activityRepository.save(activity);
         publishAfterCommit("activity.created", saved);
-        return saved;
+        return ActivityResponse.from(saved);
     }
 
-    public Map<String, Object> dashboardMetrics() {
-        List<Contact> contacts = contactRepository.findAll();
-        List<Deal> deals = dealRepository.findAll();
-        List<Activity> activities = activityRepository.findAll();
-
-        long contactCount = contacts.size();
-        long dealCount = deals.size();
-        long activityCount = activities.size();
+    @Transactional(readOnly = true)
+    public DashboardMetricsResponse dashboardMetrics() {
+        long contactCount = contactRepository.count();
+        long dealCount = dealRepository.count();
+        long activityCount = activityRepository.count();
         long totalRecords = contactCount + dealCount + activityCount;
 
         Map<DealStage, BigDecimal> pipelineByStage = new EnumMap<>(DealStage.class);
         for (DealStage stage : DealStage.values()) {
             pipelineByStage.put(stage, BigDecimal.ZERO);
         }
-        for (Deal deal : deals) {
-            pipelineByStage.compute(deal.getStage(), (k, v) -> v.add(deal.getValue()));
+        for (DealStageValueView item : dealRepository.sumValueGroupedByStage()) {
+            pipelineByStage.put(item.getStage(), item.getTotal());
         }
 
         Map<ContactStatus, Long> leadStatusCounts = new EnumMap<>(ContactStatus.class);
         for (ContactStatus status : ContactStatus.values()) {
             leadStatusCounts.put(status, 0L);
         }
-        for (Contact contact : contacts) {
-            leadStatusCounts.compute(contact.getStatus(), (k, v) -> v + 1L);
+        for (ContactStatusCountView item : contactRepository.countGroupedByStatus()) {
+            leadStatusCounts.put(item.getStatus(), item.getTotal());
         }
 
         Map<ActivityType, Long> activityTypeCounts = new EnumMap<>(ActivityType.class);
         for (ActivityType type : ActivityType.values()) {
             activityTypeCounts.put(type, 0L);
         }
-        for (Activity activity : activities) {
-            activityTypeCounts.compute(activity.getType(), (k, v) -> v + 1L);
+        for (ActivityTypeCountView item : activityRepository.countGroupedByType()) {
+            activityTypeCounts.put(item.getType(), item.getTotal());
         }
 
-        BigDecimal projectedRevenue = deals.stream()
-            .filter(deal -> deal.getStage() != DealStage.LOST)
-            .map(Deal::getValue)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal closedRevenue = deals.stream()
-            .filter(deal -> deal.getStage() == DealStage.WON)
-            .map(Deal::getValue)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal projectedRevenue = dealRepository.sumValueWhereStageNot(DealStage.LOST);
+        BigDecimal closedRevenue = dealRepository.sumValueWhereStage(DealStage.WON);
 
         BigDecimal conversionRate = contactCount == 0
             ? BigDecimal.ZERO
@@ -164,73 +172,78 @@ public class CrmService {
                 .multiply(BigDecimal.valueOf(100))
                 .divide(BigDecimal.valueOf(contactCount), 1, RoundingMode.HALF_UP);
 
-        long overdueActivities = activities.stream()
-            .filter(activity -> !activity.isCompleted())
-            .filter(activity -> activity.getDueAt() != null && activity.getDueAt().isBefore(Instant.now()))
-            .count();
+        Instant now = Instant.now();
+        long overdueActivities = activityRepository.countByCompletedFalseAndDueAtBefore(now);
+        long scheduledActivities = activityRepository.countByCompletedFalseAndDueAtGreaterThanEqual(now);
 
-        long scheduledActivities = activities.stream()
-            .filter(activity -> !activity.isCompleted())
-            .filter(activity -> activity.getDueAt() != null && !activity.getDueAt().isBefore(Instant.now()))
-            .count();
+        List<DashboardTimelineItemResponse> recordsTimeline = buildTimeline();
 
-        List<Map<String, Object>> recordsTimeline = buildTimeline(contacts, deals, activities);
-
-        Map<String, Object> metrics = new LinkedHashMap<>();
-        metrics.put("contacts", contactCount);
-        metrics.put("deals", dealCount);
-        metrics.put("activities", activityCount);
-        metrics.put("totalRecords", totalRecords);
-        metrics.put("overdueActivities", overdueActivities);
-        metrics.put("scheduledActivities", scheduledActivities);
-        metrics.put("projectedRevenue", projectedRevenue);
-        metrics.put("closedRevenue", closedRevenue);
-        metrics.put("conversionRate", conversionRate);
-        metrics.put("pipelineByStage", pipelineByStage);
-        metrics.put("leadStatusCounts", leadStatusCounts);
-        metrics.put("activityTypeCounts", activityTypeCounts);
-        metrics.put("recordsTimeline", recordsTimeline);
-        return metrics;
+        return new DashboardMetricsResponse(
+            contactCount,
+            dealCount,
+            activityCount,
+            totalRecords,
+            overdueActivities,
+            scheduledActivities,
+            projectedRevenue,
+            closedRevenue,
+            conversionRate,
+            pipelineByStage,
+            leadStatusCounts,
+            activityTypeCounts,
+            recordsTimeline
+        );
     }
 
-    private List<Map<String, Object>> buildTimeline(List<Contact> contacts, List<Deal> deals, List<Activity> activities) {
+    private List<DashboardTimelineItemResponse> buildTimeline() {
         LocalDate today = LocalDate.now(DASHBOARD_ZONE);
-        Map<LocalDate, Map<String, Object>> buckets = new LinkedHashMap<>();
+        LocalDate startDate = today.minusDays(6);
+        Instant start = startDate.atStartOfDay(DASHBOARD_ZONE).toInstant();
+        Instant end = today.plusDays(1).atStartOfDay(DASHBOARD_ZONE).toInstant();
+
+        Map<LocalDate, long[]> countsByDate = new LinkedHashMap<>();
+        mergeDailyCounts(countsByDate, contactRepository.countCreatedBetweenGroupedByDate(start, end), 0);
+        mergeDailyCounts(countsByDate, dealRepository.countCreatedBetweenGroupedByDate(start, end), 1);
+        mergeDailyCounts(countsByDate, activityRepository.countCreatedBetweenGroupedByDate(start, end), 2);
+
+        List<DashboardTimelineItemResponse> timeline = new ArrayList<>();
 
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("date", date.toString());
-            item.put("label", date.getDayOfMonth() + "/" + String.format("%02d", date.getMonthValue()));
-            item.put("leads", 0L);
-            item.put("oportunidades", 0L);
-            item.put("atividades", 0L);
-            item.put("total", 0L);
-            buckets.put(date, item);
+            long[] counters = countsByDate.getOrDefault(date, new long[3]);
+            timeline.add(new DashboardTimelineItemResponse(
+                date.toString(),
+                date.getDayOfMonth() + "/" + String.format("%02d", date.getMonthValue()),
+                counters[0],
+                counters[1],
+                counters[2],
+                counters[0] + counters[1] + counters[2]
+            ));
         }
 
-        contacts.forEach(contact -> incrementTimeline(buckets, contact.getCreatedAt(), "leads"));
-        deals.forEach(deal -> incrementTimeline(buckets, deal.getCreatedAt(), "oportunidades"));
-        activities.forEach(activity -> incrementTimeline(buckets, activity.getCreatedAt(), "atividades"));
-
-        return new ArrayList<>(buckets.values());
+        return timeline;
     }
 
-    private void incrementTimeline(Map<LocalDate, Map<String, Object>> buckets, Instant instant, String key) {
-        if (instant == null) {
-            return;
+    private void mergeDailyCounts(Map<LocalDate, long[]> buckets, List<Object[]> rows, int index) {
+        for (Object[] row : rows) {
+            LocalDate date = toLocalDate(row[0]);
+            long total = ((Number) row[1]).longValue();
+            long[] counters = buckets.computeIfAbsent(date, ignored -> new long[3]);
+            counters[index] = total;
         }
+    }
 
-        LocalDate date = instant.atZone(DASHBOARD_ZONE).toLocalDate();
-        Map<String, Object> bucket = buckets.get(date);
-        if (bucket == null) {
-            return;
+    private LocalDate toLocalDate(Object value) {
+        if (value instanceof LocalDate localDate) {
+            return localDate;
         }
-
-        long currentValue = (long) bucket.get(key);
-        long currentTotal = (long) bucket.get("total");
-        bucket.put(key, currentValue + 1L);
-        bucket.put("total", currentTotal + 1L);
+        if (value instanceof java.sql.Date sqlDate) {
+            return sqlDate.toLocalDate();
+        }
+        if (value instanceof LocalDateTime localDateTime) {
+            return localDateTime.toLocalDate();
+        }
+        return LocalDate.parse(String.valueOf(value));
     }
 
     private void publishAfterCommit(String eventType, Object payload) {

@@ -1,7 +1,9 @@
 package com.synkra.crm;
 
+import com.synkra.crm.dto.ContactResponse;
 import com.synkra.crm.dto.CreateContactRequest;
 import com.synkra.crm.dto.CreateDealRequest;
+import com.synkra.crm.dto.DealResponse;
 import com.synkra.crm.model.Contact;
 import com.synkra.crm.model.ContactStatus;
 import com.synkra.crm.model.Deal;
@@ -62,15 +64,15 @@ class CrmServiceTest {
             return contact;
         });
 
-        Contact saved = crmService.createContact(request);
+        ContactResponse saved = crmService.createContact(request);
 
         ArgumentCaptor<Contact> captor = ArgumentCaptor.forClass(Contact.class);
         verify(contactRepository).save(captor.capture());
-        verify(n8nWebhookService, times(1)).publish("contact.created", saved);
+        verify(n8nWebhookService, times(1)).publish("contact.created", captor.getValue());
 
         assertThat(captor.getValue().getStatus()).isEqualTo(ContactStatus.LEAD);
-        assertThat(saved.getId()).isEqualTo(1L);
-        assertThat(saved.getEmail()).isEqualTo("ana@example.com");
+        assertThat(saved.id()).isEqualTo(1L);
+        assertThat(saved.email()).isEqualTo("ana@example.com");
     }
 
     @Test
@@ -96,11 +98,14 @@ class CrmServiceTest {
             return deal;
         });
 
-        Deal saved = crmService.createDeal(request);
+        DealResponse saved = crmService.createDeal(request);
+        ArgumentCaptor<Deal> captor = ArgumentCaptor.forClass(Deal.class);
 
-        assertThat(saved.getId()).isEqualTo(11L);
-        assertThat(saved.getContact()).isSameAs(contact);
-        assertThat(saved.getStage()).isEqualTo(DealStage.PROPOSAL);
-        verify(n8nWebhookService).publish("deal.created", saved);
+        verify(dealRepository).save(captor.capture());
+        verify(n8nWebhookService).publish("deal.created", captor.getValue());
+
+        assertThat(saved.id()).isEqualTo(11L);
+        assertThat(saved.contact().id()).isEqualTo(7L);
+        assertThat(saved.stage()).isEqualTo(DealStage.PROPOSAL);
     }
 }

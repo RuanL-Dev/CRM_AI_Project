@@ -26,11 +26,15 @@ n8n:
   webhook-url: ${N8N_WEBHOOK_URL:}
   connect-timeout-ms: ${N8N_CONNECT_TIMEOUT_MS:2000}
   read-timeout-ms: ${N8N_READ_TIMEOUT_MS:5000}
+  retry-delay-ms: ${N8N_RETRY_DELAY_MS:30000}
+  retry-scheduler-delay-ms: ${N8N_RETRY_SCHEDULER_DELAY_MS:30000}
+  max-attempts: ${N8N_MAX_ATTEMPTS:5}
 
 app:
   seed-demo-data:
     enabled: false
   security:
+    bootstrap-enabled: ${CRM_BOOTSTRAP_ENABLED:true}
     username: ${CRM_USERNAME:admin}
     password: ${CRM_PASSWORD:change-me-now}
     dev-h2-console-enabled: false

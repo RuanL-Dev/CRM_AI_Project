@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -232,5 +233,114 @@ class CrmApiSecurityIntegrationTests {
             .andExpect(jsonPath("$.id").isNumber())
             .andExpect(jsonPath("$.type").value("CALL"))
             .andExpect(jsonPath("$.contact.id").value(contactId));
+    }
+
+    @Test
+    void updateDealStageWorksForAuthenticatedUser() throws Exception {
+        CreateContactRequest contactRequest = new CreateContactRequest(
+            "Fernanda Lima",
+            "fernanda@example.com",
+            "11988885555",
+            "Synkra",
+            ContactStatus.LEAD
+        );
+
+        String contactJson = mockMvc.perform(post("/api/contacts")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(contactRequest)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        Long contactId = objectMapper.readTree(contactJson).get("id").asLong();
+
+        CreateDealRequest dealRequest = new CreateDealRequest(
+            "Renovacao Enterprise",
+            BigDecimal.valueOf(9000),
+            DealStage.PROSPECTING,
+            LocalDate.now().plusDays(14),
+            contactId
+        );
+
+        String dealJson = mockMvc.perform(post("/api/deals")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dealRequest)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        Long dealId = objectMapper.readTree(dealJson).get("id").asLong();
+
+        mockMvc.perform(patch("/api/deals/{dealId}/stage", dealId)
+                .param("stage", "WON")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(dealId))
+            .andExpect(jsonPath("$.stage").value("WON"));
+    }
+
+    @Test
+    void metricsEndpointReturnsStructuredDashboardPayload() throws Exception {
+        CreateContactRequest contactRequest = new CreateContactRequest(
+            "Beatriz Rocha",
+            "beatriz@example.com",
+            "11988884444",
+            "Synkra",
+            ContactStatus.CUSTOMER
+        );
+
+        String contactJson = mockMvc.perform(post("/api/contacts")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(contactRequest)))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        Long contactId = objectMapper.readTree(contactJson).get("id").asLong();
+
+        mockMvc.perform(post("/api/deals")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateDealRequest(
+                    "Expansao",
+                    BigDecimal.valueOf(12000),
+                    DealStage.PROSPECTING,
+                    LocalDate.now().plusDays(10),
+                    contactId
+                ))))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/activities")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new CreateActivityRequest(
+                    ActivityType.EMAIL,
+                    "Enviar proposta",
+                    Instant.now().plusSeconds(3600),
+                    contactId
+                ))))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/dashboard/metrics")
+                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.contacts").value(1))
+            .andExpect(jsonPath("$.deals").value(1))
+            .andExpect(jsonPath("$.activities").value(1))
+            .andExpect(jsonPath("$.leadStatusCounts.CUSTOMER").value(1))
+            .andExpect(jsonPath("$.pipelineByStage.PROSPECTING").value(12000))
+            .andExpect(jsonPath("$.recordsTimeline").isArray());
     }
 }

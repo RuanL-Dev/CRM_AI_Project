@@ -25,7 +25,7 @@
 
 O **CRM AI Project** e uma base de CRM voltada para operacoes comerciais que precisam centralizar contatos, deals, atividades e automacoes externas. O repositorio foi iniciado com apoio do Codex e esta sendo profissionalizado sob as diretrizes do **AIOX**, com foco em qualidade, rastreabilidade e evolucao segura.
 
-Na implementacao atual, o projeto entrega uma API REST em **Java 17 + Spring Boot**, um frontend em **Next.js + React + Tailwind CSS**, autenticacao basica e envio de eventos para o **N8N**. Em runtime, a persistencia passa a ser **PostgreSQL**, enquanto o **H2** fica restrito aos testes automatizados.
+Na implementacao atual, o projeto entrega uma API REST em **Java 17 + Spring Boot**, um frontend em **Next.js + React + Tailwind CSS**, autenticacao com usuarios persistidos no banco e envio de eventos para o **N8N** com trilha persistente de entrega. Em runtime, a persistencia passa a ser **PostgreSQL**, enquanto o **H2** fica restrito aos testes automatizados.
 
 ---
 
@@ -42,11 +42,11 @@ Na implementacao atual, o projeto entrega uma API REST em **Java 17 + Spring Boo
 
 ### API REST
 - Endpoints para contatos, deals, atividades e metricas
-- DTOs de entrada para criacao de entidades principais
-- Protecao por autenticacao basica no dashboard e na API
+- DTOs de entrada e resposta para o contrato HTTP
+- Protecao por autenticacao no dashboard e na API com bootstrap inicial por variavel de ambiente
 
 ### Integracao N8N
-- Publicacao automatica de eventos do CRM via webhook HTTP
+- Publicacao automatica de eventos do CRM via webhook HTTP com persistencia de entrega
 - Eventos para criacao de contatos, deals, mudanca de estagio e atividades
 
 ---
@@ -60,12 +60,12 @@ Na implementacao atual, o projeto entrega uma API REST em **Java 17 + Spring Boo
 | API | Spring Web |
 | Persistencia de runtime | Spring Data JPA + PostgreSQL |
 | Migracoes | Flyway |
-| Seguranca | Spring Security |
+| Seguranca | Spring Security + usuarios persistidos |
 | Frontend | Next.js + React |
 | Estilizacao | Tailwind CSS |
 | Build | Maven |
 | Testes | JUnit + Mockito + Spring Boot Test |
-| Integracao | N8N via webhook HTTP |
+| Integracao | N8N via webhook HTTP com outbox persistente e retry |
 
 ## Stack de Testes
 
@@ -88,8 +88,8 @@ crm-n8n-java/
 |   |   |-- java/com/synkra/crm/
 |   |   |   |-- config/        # Configuracao da aplicacao e seguranca
 |   |   |   |-- controller/    # Dashboard, API REST e tratamento de erros
-|   |   |   |-- dto/           # Requests de entrada
-|   |   |   |-- model/         # Entidades de dominio
+|   |   |   |-- dto/           # Requests e responses da API
+|   |   |   |-- model/         # Entidades de dominio, usuarios e entregas de webhook
 |   |   |   |-- repository/    # Repositorios JPA
 |   |   |   `-- service/       # Regras de negocio e integracao N8N
 |   |   `-- resources/
@@ -103,6 +103,7 @@ crm-n8n-java/
 |   |-- framework/
 |   `-- stories/
 |-- frontend/                  # Workspace Next.js + React + Tailwind
+|-- deploy/                    # Docker Compose e proxy reverso
 |-- AGENTS.md
 `-- pom.xml
 ```
@@ -111,8 +112,8 @@ crm-n8n-java/
 
 - **Apresentacao** - dashboard web e endpoints HTTP
 - **Aplicacao** - orquestracao das regras de negocio de CRM
-- **Persistencia** - entidades JPA e acesso a dados
-- **Integracao** - publicacao de eventos para N8N
+- **Persistencia** - entidades JPA, usuarios da aplicacao e acesso a dados
+- **Integracao** - publicacao de eventos para N8N com persistencia de entrega
 - **Governanca** - stories, documentacao arquitetural e padrao AIOX
 
 ---
@@ -132,11 +133,12 @@ crm-n8n-java/
 ```bash
 cd frontend
 npm install
-npm run build
 
 cd ..
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+Observacao: o `mvn verify` sincroniza automaticamente o export estatico do frontend antes do empacotamento do `jar`, reduzindo drift entre `frontend/` e `src/main/resources/static/ui/`.
 
 Acessos locais:
 
@@ -160,12 +162,16 @@ CRM_PASSWORD=change-me-now
 CRM_DATASOURCE_URL=jdbc:postgresql://localhost:5432/crm_ai_project
 CRM_DATASOURCE_USERNAME=crm_app
 CRM_DATASOURCE_PASSWORD=crm_app
+CRM_BOOTSTRAP_ENABLED=true
 ```
 
 Integracao com N8N:
 
 ```env
 N8N_WEBHOOK_URL=https://seu-n8n/webhook/crm-events
+N8N_RETRY_DELAY_MS=30000
+N8N_RETRY_SCHEDULER_DELAY_MS=30000
+N8N_MAX_ATTEMPTS=5
 ```
 
 Antes de qualquer ambiente compartilhado, substitua as credenciais padrao por valores seguros.
@@ -194,6 +200,8 @@ Base URL atual: `/api`
 ## Integracao N8N
 
 O CRM publica eventos automaticamente para workflows externos.
+
+Cada tentativa de entrega fica registrada em banco com status, contador de tentativas, ultimo erro e proxima tentativa agendada quando a chamada falha.
 
 ### Eventos atualmente enviados
 
@@ -247,6 +255,7 @@ Este repositorio opera com governanca AIOX:
 Referencias principais:
 
 - `AGENTS.md`
+- `docs/architecture/current-system-map.md`
 - `docs/architecture/brownfield-baseline.md`
 - `docs/aiox/repository-boundary.md`
 - `docs/stories/001-aiox-brownfield-hardening.md`
@@ -269,7 +278,7 @@ Referencias principais:
 
 ## Status do Projeto
 
-O projeto agora possui uma baseline funcional com API Spring Boot, frontend em **Next.js + React**, seguranca inicial, integracao com **N8N** e runtime em **PostgreSQL**. A etapa atual passa a ser o endurecimento dessa base com contratos de API, migracoes adicionais, observabilidade e mais cobertura automatizada.
+O projeto agora possui uma baseline funcional com API Spring Boot, frontend em **Next.js + React**, autenticacao persistida, integracao com **N8N** com retry persistido e runtime em **PostgreSQL**. A etapa atual passa a ser o endurecimento continuo dessa base com mais observabilidade, contratos mais ricos e maior cobertura automatizada.
 
 ---
 

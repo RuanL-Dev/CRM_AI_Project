@@ -17,6 +17,7 @@ app:
   seed-demo-data:
     enabled: false
   security:
+    bootstrap-enabled: true
     username: test-user
     password: test-password
     dev-h2-console-enabled: false
@@ -25,3 +26,6 @@ n8n:
   webhook-url:
   connect-timeout-ms: 1000
   read-timeout-ms: 1000
+  retry-delay-ms: 100
+  retry-scheduler-delay-ms: 1000
+  max-attempts: 2

@@ -3,9 +3,10 @@ package com.synkra.crm.controller;
 import com.synkra.crm.dto.CreateActivityRequest;
 import com.synkra.crm.dto.CreateContactRequest;
 import com.synkra.crm.dto.CreateDealRequest;
-import com.synkra.crm.model.Activity;
-import com.synkra.crm.model.Contact;
-import com.synkra.crm.model.Deal;
+import com.synkra.crm.dto.ActivityResponse;
+import com.synkra.crm.dto.ContactResponse;
+import com.synkra.crm.dto.DashboardMetricsResponse;
+import com.synkra.crm.dto.DealResponse;
 import com.synkra.crm.model.DealStage;
 import com.synkra.crm.service.CrmService;
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ public class CrmApiController {
     }
 
     @GetMapping("/contacts")
-    public List<Contact> contacts() {
+    public List<ContactResponse> contacts() {
         return crmService.listContacts();
     }
 
@@ -41,40 +42,40 @@ public class CrmApiController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/contacts")
-    public Contact createContact(@Valid @RequestBody CreateContactRequest request) {
+    public ContactResponse createContact(@Valid @RequestBody CreateContactRequest request) {
         return crmService.createContact(request);
     }
 
     @GetMapping("/deals")
-    public List<Deal> deals() {
+    public List<DealResponse> deals() {
         return crmService.listDeals();
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/deals")
-    public Deal createDeal(@Valid @RequestBody CreateDealRequest request) {
+    public DealResponse createDeal(@Valid @RequestBody CreateDealRequest request) {
         return crmService.createDeal(request);
     }
 
     @PatchMapping("/deals/{dealId}/stage")
-    public Deal updateDealStage(@PathVariable Long dealId,
-                                @RequestParam DealStage stage) {
+    public DealResponse updateDealStage(@PathVariable Long dealId,
+                                        @RequestParam DealStage stage) {
         return crmService.updateDealStage(dealId, stage);
     }
 
     @GetMapping("/activities")
-    public List<Activity> activities() {
+    public List<ActivityResponse> activities() {
         return crmService.listActivities();
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/activities")
-    public Activity createActivity(@Valid @RequestBody CreateActivityRequest request) {
+    public ActivityResponse createActivity(@Valid @RequestBody CreateActivityRequest request) {
         return crmService.createActivity(request);
     }
 
     @GetMapping("/dashboard/metrics")
-    public Map<String, Object> metrics() {
+    public DashboardMetricsResponse metrics() {
         return crmService.dashboardMetrics();
     }
 }
