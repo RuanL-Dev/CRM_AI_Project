@@ -59,6 +59,7 @@ O deploy automático roda a cada push em `main` e executa:
 - As senhas de `CRM_POSTGRES_PASSWORD` e `CRM_APP_PASSWORD` devem ter pelo menos 12 caracteres, nao podem usar defaults fracos bloqueados e nao podem coincidir com o usuario associado.
 - Se o readiness falhar, o workflow agora publica `docker compose ps` e os logs recentes de `crm-postgres` e `crm-app` para acelerar o diagnostico.
 - O readiness interno do deploy usa `http://127.0.0.1:8081/healthz`; a validacao publica continua verificando a pagina de login exposta pelo proxy.
+- O checksum do `jar` e gerado com caminho relativo ao proprio artefato para que a validacao remota funcione no diretorio de deploy.
 
 Passos esperados no servidor:
 1. Copiar `.env.example` para `.env` e preencher com segredos reais.

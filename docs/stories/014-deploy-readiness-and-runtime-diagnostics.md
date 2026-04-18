@@ -7,6 +7,7 @@
 - [x] Definir a estrategia de readiness via endpoint tecnico dedicado
 - [x] Endurecer o workflow para falhar cedo com secrets invalidos para runtime seguro
 - [x] Expor diagnostico remoto de containers quando a aplicacao nao fica pronta
+- [x] Corrigir a validacao remota de checksum para usar manifesto portavel no servidor
 - [x] Atualizar documentacao operacional e file list
 - [x] Rodar quality gates do projeto
 
@@ -23,6 +24,7 @@ so that runtime startup issues do not surface only as a generic readiness timeou
 - A baseline atual de seguranca exige secrets fortes fora de `dev` e `test`, o que pode derrubar o startup se o ambiente remoto estiver inconsistente.
 - O deploy precisa falhar mais cedo para configuracoes que ja violam os guardrails conhecidos do runtime.
 - A decisao atual do projeto e usar um endpoint tecnico dedicado para readiness interno, sem depender do HTML da tela de login.
+- A validacao de checksum tambem precisa ser portavel entre runner e servidor remoto; manifests com caminho local do runner quebram no host de deploy.
 
 ## Acceptance Criteria
 
@@ -41,12 +43,14 @@ so that runtime startup issues do not surface only as a generic readiness timeou
 - [x] Add preflight validation for production secrets used by the runtime guardrails.
 - [x] Add remote diagnostic output for compose status and container logs when readiness fails.
 - [x] Increase readiness tolerance to reduce false negatives on slower startups.
+- [x] Generate the checksum manifest with a path that is valid on the remote deploy directory.
 - [x] Run `mvn test` and `mvn verify`.
 
 ## Notes
 
 - This increment preserves the current deploy architecture and improves operability only.
 - The goal is not to mask startup failures, but to make them explicit in GitHub Actions output.
+- The checksum manifest is now emitted relative to the artifact directory so `sha256sum -c` works after upload on the server.
 
 ## File List
 

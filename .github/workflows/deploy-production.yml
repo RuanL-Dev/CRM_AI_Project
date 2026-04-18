@@ -142,7 +142,9 @@ jobs:
 
       - name: Generate artifact checksum
         shell: bash
-        run: sha256sum target/crm-n8n-java-0.1.0.jar > target/crm-n8n-java-0.1.0.jar.sha256
+        run: |
+          cd target
+          sha256sum crm-n8n-java-0.1.0.jar > crm-n8n-java-0.1.0.jar.sha256
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
