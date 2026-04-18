@@ -196,6 +196,7 @@ function Test-PublicLogin {
 
 Require-Command -Name "git"
 Require-Command -Name "mvn"
+Require-Command -Name "npm"
 Require-Command -Name "ssh"
 Require-Command -Name "scp"
 
@@ -261,6 +262,14 @@ try {
         $buildRoot = $temporaryBuildRepo
         $buildTargetDir = Join-Path $buildRoot "target"
         $buildDeployDir = Join-Path $buildRoot "deploy"
+
+        Write-Step "Instalando dependencias do frontend no clone temporario"
+        Push-Location (Join-Path $buildRoot "frontend")
+        try {
+            Invoke-Native -FilePath "npm" -Arguments @("ci")
+        } finally {
+            Pop-Location
+        }
 
         Write-Step "Executando mvn verify no clone temporario"
         Push-Location $buildRoot
