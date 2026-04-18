@@ -14,7 +14,7 @@ $deployDir = Join-Path $repoRoot "deploy"
 $targetDir = Join-Path $repoRoot "target"
 $deployStampPath = Join-Path $repoRoot ".local/last-deployed-commit"
 $tempFiles = [System.Collections.Generic.List[string]]::new()
-$temporaryWorktree = $null
+$temporaryBuildRepo = $null
 
 function Write-Step {
     param([string]$Message)
@@ -253,15 +253,16 @@ try {
         if (-not (Test-Path -LiteralPath $localRuntimeDir)) {
             New-Item -ItemType Directory -Path $localRuntimeDir | Out-Null
         }
-        $temporaryWorktree = Join-Path $localRuntimeDir ("deploy-worktree-" + [guid]::NewGuid().ToString("N"))
-        Write-Step "Criando worktree temporario do commit $commitSha"
-        Invoke-Native -FilePath "git" -Arguments @("-C", $repoRoot, "worktree", "add", "--detach", $temporaryWorktree, $commitRef)
+        $temporaryBuildRepo = Join-Path $localRuntimeDir ("deploy-build-" + [guid]::NewGuid().ToString("N"))
+        Write-Step "Criando clone temporario do commit $commitSha"
+        Invoke-Native -FilePath "git" -Arguments @("clone", "--quiet", "--no-checkout", $repoRoot, $temporaryBuildRepo)
+        Invoke-Native -FilePath "git" -Arguments @("-C", $temporaryBuildRepo, "checkout", "--force", $commitRef)
 
-        $buildRoot = $temporaryWorktree
+        $buildRoot = $temporaryBuildRepo
         $buildTargetDir = Join-Path $buildRoot "target"
         $buildDeployDir = Join-Path $buildRoot "deploy"
 
-        Write-Step "Executando mvn verify no worktree temporario"
+        Write-Step "Executando mvn verify no clone temporario"
         Push-Location $buildRoot
         try {
             Invoke-Native -FilePath "mvn" -Arguments @("verify")
@@ -342,8 +343,8 @@ exit 1
         Remove-Item -LiteralPath $deployEnvFile -Force
     }
 
-    if ($temporaryWorktree -and (Test-Path -LiteralPath $temporaryWorktree)) {
-        Invoke-Native -FilePath "git" -Arguments @("-C", $repoRoot, "worktree", "remove", "--force", $temporaryWorktree)
+    if ($temporaryBuildRepo -and (Test-Path -LiteralPath $temporaryBuildRepo)) {
+        Remove-Item -LiteralPath $temporaryBuildRepo -Recurse -Force
     }
 
     foreach ($tempFile in $tempFiles) {
