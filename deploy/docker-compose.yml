@@ -37,7 +37,7 @@ services:
       N8N_MAX_ATTEMPTS: ${N8N_MAX_ATTEMPTS:-5}
     volumes:
       - ./crm-n8n-java-0.1.0.jar:/app/app.jar:ro
-    command: ["java", "-jar", "/app/app.jar", "--spring.profiles.active=${CRM_APP_PROFILE:-dev}", "--server.port=8081"]
+    command: ["java", "-jar", "/app/app.jar", "--spring.profiles.active=${CRM_APP_PROFILE}", "--server.port=8081"]
     ports:
       - "127.0.0.1:8081:8081"
 

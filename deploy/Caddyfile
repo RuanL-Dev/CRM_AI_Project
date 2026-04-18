@@ -1,4 +1,11 @@
 crm.example.com {
     encode gzip zstd
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
+    }
     reverse_proxy 127.0.0.1:8081
 }

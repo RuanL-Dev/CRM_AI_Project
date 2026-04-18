@@ -2,9 +2,9 @@ spring:
   application:
     name: crm-n8n-java
   datasource:
-    url: ${CRM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/crm_ai_project}
-    username: ${CRM_DATASOURCE_USERNAME:crm_app}
-    password: ${CRM_DATASOURCE_PASSWORD:crm_app}
+    url: ${CRM_DATASOURCE_URL}
+    username: ${CRM_DATASOURCE_USERNAME}
+    password: ${CRM_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -21,6 +21,13 @@ spring:
 
 server:
   port: 8080
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+      timeout: 30m
 
 n8n:
   webhook-url: ${N8N_WEBHOOK_URL:}
@@ -34,7 +41,14 @@ app:
   seed-demo-data:
     enabled: false
   security:
-    bootstrap-enabled: ${CRM_BOOTSTRAP_ENABLED:true}
-    username: ${CRM_USERNAME:admin}
-    password: ${CRM_PASSWORD:change-me-now}
+    bootstrap-enabled: ${CRM_BOOTSTRAP_ENABLED:false}
+    username: ${CRM_USERNAME:}
+    password: ${CRM_PASSWORD:}
     dev-h2-console-enabled: false
+    password-policy:
+      min-length: 12
+    login-rate-limit:
+      enabled: true
+      max-failures: 5
+      window: 15m
+      lockout: 15m

@@ -27,8 +27,10 @@ import java.time.LocalDate;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -72,9 +74,16 @@ class CrmApiSecurityIntegrationTests {
     }
 
     @Test
+    void healthEndpointLoadsWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/healthz"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("ok"));
+    }
+
+    @Test
     void dashboardLoadsForAuthenticatedUser() throws Exception {
         mockMvc.perform(get("/")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password")))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER")))
             .andExpect(status().isOk())
             .andExpect(forwardedUrl("/ui/index.html"));
     }
@@ -90,7 +99,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -111,7 +120,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -130,14 +139,14 @@ class CrmApiSecurityIntegrationTests {
         );
 
         mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -148,10 +157,46 @@ class CrmApiSecurityIntegrationTests {
     @Test
     void csrfEndpointReturnsTokenForAuthenticatedUser() throws Exception {
         mockMvc.perform(get("/api/security/csrf")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password")))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.token").isString())
             .andExpect(jsonPath("$.headerName").value("X-CSRF-TOKEN"));
+    }
+
+    @Test
+    void loginCsrfEndpointLoadsWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/auth/csrf"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").isString())
+            .andExpect(jsonPath("$.parameterName").value("_csrf"));
+    }
+
+    @Test
+    void loginPageIncludesSecurityHeaders() throws Exception {
+        mockMvc.perform(get("/login"))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Content-Security-Policy", org.hamcrest.Matchers.containsString("default-src 'self'")))
+            .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
+            .andExpect(header().string("Permissions-Policy", "camera=(), geolocation=(), microphone=(), payment=(), usb=()"));
+    }
+
+    @Test
+    void loginRateLimitBlocksAfterRepeatedFailures() throws Exception {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            mockMvc.perform(post("/login")
+                    .with(SecurityMockMvcRequestPostProcessors.csrf())
+                    .param("username", "test-user")
+                    .param("password", "wrong-password"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?error"));
+        }
+
+        mockMvc.perform(post("/login")
+                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                .param("username", "test-user")
+                .param("password", "wrong-password"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/login?locked"));
     }
 
     @Test
@@ -165,7 +210,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         String contactJson = mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contactRequest)))
@@ -185,7 +230,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         mockMvc.perform(post("/api/deals")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dealRequest)))
@@ -206,7 +251,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         String contactJson = mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contactRequest)))
@@ -225,7 +270,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         mockMvc.perform(post("/api/activities")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(activityRequest)))
@@ -246,7 +291,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         String contactJson = mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contactRequest)))
@@ -266,7 +311,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         String dealJson = mockMvc.perform(post("/api/deals")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dealRequest)))
@@ -279,7 +324,7 @@ class CrmApiSecurityIntegrationTests {
 
         mockMvc.perform(patch("/api/deals/{dealId}/stage", dealId)
                 .param("stage", "WON")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(dealId))
@@ -297,7 +342,7 @@ class CrmApiSecurityIntegrationTests {
         );
 
         String contactJson = mockMvc.perform(post("/api/contacts")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contactRequest)))
@@ -309,7 +354,7 @@ class CrmApiSecurityIntegrationTests {
         Long contactId = objectMapper.readTree(contactJson).get("id").asLong();
 
         mockMvc.perform(post("/api/deals")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new CreateDealRequest(
@@ -322,7 +367,7 @@ class CrmApiSecurityIntegrationTests {
             .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/activities")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password"))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER"))
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(new CreateActivityRequest(
@@ -334,7 +379,7 @@ class CrmApiSecurityIntegrationTests {
             .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/dashboard/metrics")
-                .with(SecurityMockMvcRequestPostProcessors.httpBasic("test-user", "test-password")))
+                .with(SecurityMockMvcRequestPostProcessors.user("test-user").roles("CRM_USER")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.contacts").value(1))
             .andExpect(jsonPath("$.deals").value(1))

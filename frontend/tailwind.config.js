@@ -7,8 +7,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["Space Grotesk", "sans-serif"],
-        body: ["Inter", "sans-serif"]
+        display: ["Trebuchet MS", "Segoe UI Semibold", "sans-serif"],
+        body: ["Segoe UI", "Helvetica Neue", "Arial", "sans-serif"]
       },
       colors: {
         ink: "#0f172a",

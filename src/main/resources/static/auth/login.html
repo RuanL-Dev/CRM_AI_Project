@@ -49,32 +49,31 @@
                     <input type="password" name="password" placeholder="Digite sua senha" autocomplete="current-password" required>
                 </label>
 
-                <button type="submit">Entrar</button>
+                <button type="submit" id="loginButton" disabled>Preparando acesso...</button>
             </form>
 
             <div class="message error" id="errorMessage" hidden>
                 Não foi possível entrar com esses dados. Revise usuário e senha e tente novamente.
             </div>
 
+            <div class="message error" id="lockedMessage" hidden>
+                Muitas tentativas falharam em sequência. Aguarde alguns minutos antes de tentar novamente.
+            </div>
+
+            <div class="message error" id="expiredMessage" hidden>
+                Sua sessão anterior expirou. Entre novamente para continuar.
+            </div>
+
             <div class="message success" id="logoutMessage" hidden>
                 Sessão encerrada com sucesso.
+            </div>
+
+            <div class="message success" id="readyMessage" hidden>
+                Ambiente seguro pronto. Você já pode enviar o login.
             </div>
         </div>
     </section>
 </main>
-
-<script>
-    const params = new URLSearchParams(window.location.search);
-    const errorMessage = document.getElementById("errorMessage");
-    const logoutMessage = document.getElementById("logoutMessage");
-
-    if (params.has("error")) {
-        errorMessage.hidden = false;
-    }
-
-    if (params.has("logout")) {
-        logoutMessage.hidden = false;
-    }
-</script>
+<script src="/auth/login.js"></script>
 </body>
 </html>

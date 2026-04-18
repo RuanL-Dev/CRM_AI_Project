@@ -147,6 +147,7 @@ Acessos locais:
 ### Perfis de runtime
 
 - `dev` - PostgreSQL com logs SQL habilitados
+- `prod` - perfil recomendado para deploy com logs SQL desligados e sem dados demo
 - `default` - PostgreSQL com `ddl-auto=validate`
 - `test` - H2 isolado para testes automatizados
 
@@ -154,15 +155,16 @@ Acessos locais:
 
 ## Variaveis de Ambiente
 
-Credenciais iniciais:
+Credenciais obrigatorias:
 
 ```env
-CRM_USERNAME=admin
-CRM_PASSWORD=change-me-now
+CRM_USERNAME=crm-admin
+CRM_PASSWORD=<senha-forte-com-12-ou-mais-caracteres>
 CRM_DATASOURCE_URL=jdbc:postgresql://localhost:5432/crm_ai_project
 CRM_DATASOURCE_USERNAME=crm_app
-CRM_DATASOURCE_PASSWORD=crm_app
+CRM_DATASOURCE_PASSWORD=<senha-forte-do-postgres>
 CRM_BOOTSTRAP_ENABLED=true
+CRM_APP_PROFILE=prod
 ```
 
 Integracao com N8N:
@@ -174,7 +176,12 @@ N8N_RETRY_SCHEDULER_DELAY_MS=30000
 N8N_MAX_ATTEMPTS=5
 ```
 
-Antes de qualquer ambiente compartilhado, substitua as credenciais padrao por valores seguros.
+Observacoes de seguranca:
+
+- o runtime base nao traz mais credenciais padrao utilizaveis
+- fora de `dev` e `test`, senhas fracas ou ausentes fazem a aplicacao falhar no startup
+- o bootstrap do usuario inicial so cria a conta na primeira execucao e nao reseta mais a senha em todo restart
+- o deploy recomendado deve usar `CRM_APP_PROFILE=prod`
 
 ---
 
@@ -239,6 +246,7 @@ Testes presentes na base:
 - smoke test da aplicacao
 - testes de integracao de seguranca da API
 - testes unitarios de servico com Mockito
+- protecoes automatizadas para headers, CSRF de login e bloqueio de tentativas repetidas
 
 ---
 
@@ -256,6 +264,7 @@ Referencias principais:
 
 - `AGENTS.md`
 - `docs/architecture/current-system-map.md`
+- `docs/architecture/security-baseline.md`
 - `docs/architecture/brownfield-baseline.md`
 - `docs/aiox/repository-boundary.md`
 - `docs/stories/001-aiox-brownfield-hardening.md`
@@ -272,13 +281,13 @@ Referencias principais:
 - [x] Substituir o dashboard por Next.js + React + Tailwind CSS
 - [ ] Formalizar DTOs de resposta e paginacao da API
 - [ ] Consolidar migracoes para ambientes persistentes
-- [ ] Ampliar observabilidade, seguranca e cobertura de testes
+- [ ] Ampliar observabilidade, autorizacao e cobertura de testes
 
 ---
 
 ## Status do Projeto
 
-O projeto agora possui uma baseline funcional com API Spring Boot, frontend em **Next.js + React**, autenticacao persistida, integracao com **N8N** com retry persistido e runtime em **PostgreSQL**. A etapa atual passa a ser o endurecimento continuo dessa base com mais observabilidade, contratos mais ricos e maior cobertura automatizada.
+O projeto agora possui uma baseline funcional com API Spring Boot, frontend em **Next.js + React**, autenticacao persistida, headers explicitos, login com CSRF e throttling basico, integracao com **N8N** com retry persistido e runtime em **PostgreSQL**. A etapa atual passa a ser o endurecimento continuo dessa base com mais observabilidade, autorizacao mais granular e maior cobertura automatizada.
 
 ---
 

@@ -13,6 +13,7 @@ Princípios:
 - o backend publica apenas em `127.0.0.1:8081`
 - o acesso público deve ser feito por um proxy reverso no host
 - o arquivo `.env` de produção é gerado a partir de GitHub Secrets durante o deploy
+- o deploy deve usar `CRM_APP_PROFILE=prod`; `dev` nao e permitido no workflow de producao
 
 ## GitHub Actions
 
@@ -22,8 +23,9 @@ O deploy automático roda a cada push em `main` e executa:
 2. `mvn verify`
 3. upload do `jar` e dos arquivos versionados de deploy para o servidor
 4. refresh do `.env` remoto a partir dos GitHub Secrets
-5. `docker compose up -d --force-recreate crm-postgres crm-app`
-6. validação do endpoint público `/login`
+5. validacao de checksum do `jar`
+6. `docker compose up -d --force-recreate crm-postgres crm-app`
+7. validacao do endpoint publico `/login`
 
 ### GitHub Secrets obrigatórios
 
@@ -53,6 +55,10 @@ O deploy automático roda a cada push em `main` e executa:
 - Use uma chave SSH dedicada ao GitHub Actions, sem senha interativa, com escopo restrito ao deploy.
 - Armazene a fingerprint do host remoto em `CRM_DEPLOY_KNOWN_HOSTS`.
 - Não use segredos reais em `deploy/.env.example`, `docker-compose.yml` ou workflows versionados.
+- Rotacione imediatamente a chave SSH e as senhas de bootstrap/PostgreSQL se qualquer material sensivel local ou do runner for exposto.
+- As senhas de `CRM_POSTGRES_PASSWORD` e `CRM_APP_PASSWORD` devem ter pelo menos 12 caracteres, nao podem usar defaults fracos bloqueados e nao podem coincidir com o usuario associado.
+- Se o readiness falhar, o workflow agora publica `docker compose ps` e os logs recentes de `crm-postgres` e `crm-app` para acelerar o diagnostico.
+- O readiness interno do deploy usa `http://127.0.0.1:8081/healthz`; a validacao publica continua verificando a pagina de login exposta pelo proxy.
 
 Passos esperados no servidor:
 1. Copiar `.env.example` para `.env` e preencher com segredos reais.

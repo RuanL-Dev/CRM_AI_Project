@@ -37,7 +37,11 @@ public class AppUserBootstrapper implements ApplicationRunner {
             return;
         }
 
-        AppUser appUser = appUserRepository.findByUsername(username).orElseGet(AppUser::new);
+        if (appUserRepository.findByUsername(username).isPresent()) {
+            return;
+        }
+
+        AppUser appUser = new AppUser();
         appUser.setUsername(username);
         appUser.setPasswordHash(passwordEncoder.encode(password));
         appUser.setRoles("CRM_USER");

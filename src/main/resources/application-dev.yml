@@ -2,6 +2,10 @@ spring:
   config:
     activate:
       on-profile: dev
+  datasource:
+    url: ${CRM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/crm_ai_project_dev}
+    username: ${CRM_DATASOURCE_USERNAME:crm_app_dev}
+    password: ${CRM_DATASOURCE_PASSWORD:crm_app_dev_secret}
   jpa:
     show-sql: true
 
@@ -9,4 +13,7 @@ app:
   seed-demo-data:
     enabled: true
   security:
+    bootstrap-enabled: ${CRM_BOOTSTRAP_ENABLED:true}
+    username: ${CRM_USERNAME:dev-admin}
+    password: ${CRM_PASSWORD:dev-only-change-this}
     dev-h2-console-enabled: false

@@ -19,8 +19,15 @@ app:
   security:
     bootstrap-enabled: true
     username: test-user
-    password: test-password
+    password: test-password-123
     dev-h2-console-enabled: false
+    password-policy:
+      min-length: 8
+    login-rate-limit:
+      enabled: true
+      max-failures: 3
+      window: 5m
+      lockout: 5m
 
 n8n:
   webhook-url:

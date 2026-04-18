@@ -134,3 +134,4 @@ Command path:
 - `docs/aiox/repository-boundary.md`
 - `docs/stories/005-nextjs-postgres-runtime.md`
 - `docs/stories/011-architecture-map-and-platform-hardening.md`
+- `docs/architecture/security-baseline.md`
