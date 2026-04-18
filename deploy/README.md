@@ -19,6 +19,8 @@ Principios:
 
 O deploy agora roda localmente a cada novo commit, via hook versionado em `.githooks/post-commit`, que chama `scripts/deploy-on-commit.ps1`.
 
+O push tambem fica protegido por `.githooks/pre-push`: ele compara o `HEAD` com `.local/last-deployed-commit` e bloqueia o push se o ultimo commit ainda nao tiver sido deployado com sucesso nesse clone.
+
 1. `mvn verify`
 2. upload do `jar` e dos arquivos versionados de deploy para o servidor
 3. refresh do `.env` remoto a partir da configuracao local em `.local/deploy.local.ps1`
@@ -54,7 +56,7 @@ O deploy agora roda localmente a cada novo commit, via hook versionado em `.gith
 
 1. Copie `deploy/deploy.local.ps1.example` para `.local/deploy.local.ps1`.
 2. Preencha as credenciais reais do servidor e da aplicacao.
-3. Ative o hook com `git config core.hooksPath .githooks`.
+3. Ative os hooks com `git config core.hooksPath .githooks`.
 4. Faca um commit normal; o deploy sera executado ao final do commit.
 
 Passos esperados no servidor:

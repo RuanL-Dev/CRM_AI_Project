@@ -11,7 +11,9 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $deployConfigPath = Join-Path $repoRoot ".local/deploy.local.ps1"
 $deployDir = Join-Path $repoRoot "deploy"
 $targetDir = Join-Path $repoRoot "target"
+$deployStampPath = Join-Path $repoRoot ".local/last-deployed-commit"
 $tempFiles = [System.Collections.Generic.List[string]]::new()
+$temporaryWorktree = $null
 
 function Write-Step {
     param([string]$Message)
@@ -158,12 +160,14 @@ function Invoke-Native {
 }
 
 function Get-BuiltJar {
-    $jars = Get-ChildItem -LiteralPath $targetDir -Filter "*.jar" -File |
+    param([string]$SearchDir)
+
+    $jars = Get-ChildItem -LiteralPath $SearchDir -Filter "*.jar" -File |
         Where-Object { $_.Name -notlike "*.jar.original" -and $_.Name -notlike "*-sources.jar" -and $_.Name -notlike "*-javadoc.jar" } |
         Sort-Object LastWriteTime -Descending
 
     if (-not $jars) {
-        throw "Nenhum jar de aplicacao foi encontrado em $targetDir"
+        throw "Nenhum jar de aplicacao foi encontrado em $SearchDir"
     }
 
     return $jars[0]
@@ -238,21 +242,37 @@ $scpArgs = $sshSharedArgs + @(
 )
 
 try {
-    Push-Location $repoRoot
+    $commitSha = (& git -C $repoRoot rev-parse --short HEAD).Trim()
+    $commitRef = (& git -C $repoRoot rev-parse HEAD).Trim()
+    $buildRoot = $repoRoot
+    $buildTargetDir = $targetDir
+    $buildDeployDir = $deployDir
 
     if (-not $SkipBuild) {
-        Write-Step "Executando mvn verify"
-        Invoke-Native -FilePath "mvn" -Arguments @("verify")
+        $temporaryWorktree = Join-Path ([System.IO.Path]::GetTempPath()) ("crm-deploy-worktree-" + [guid]::NewGuid().ToString("N"))
+        Write-Step "Criando worktree temporario do commit $commitSha"
+        Invoke-Native -FilePath "git" -Arguments @("-C", $repoRoot, "worktree", "add", "--detach", $temporaryWorktree, $commitRef)
+
+        $buildRoot = $temporaryWorktree
+        $buildTargetDir = Join-Path $buildRoot "target"
+        $buildDeployDir = Join-Path $buildRoot "deploy"
+
+        Write-Step "Executando mvn verify no worktree temporario"
+        Push-Location $buildRoot
+        try {
+            Invoke-Native -FilePath "mvn" -Arguments @("verify")
+        } finally {
+            Pop-Location
+        }
     } else {
         Write-Step "Build ignorado por parametro"
     }
 
-    $jar = Get-BuiltJar
-    $sha256File = Join-Path $targetDir ($jar.Name + ".sha256")
+    $jar = Get-BuiltJar -SearchDir $buildTargetDir
+    $sha256File = Join-Path $buildTargetDir ($jar.Name + ".sha256")
     $hash = Get-FileHash -LiteralPath $jar.FullName -Algorithm SHA256
     "{0} *{1}" -f $hash.Hash.ToLowerInvariant(), $jar.Name | Set-Content -LiteralPath $sha256File -NoNewline
 
-    $commitSha = (& git rev-parse --short HEAD).Trim()
     $remote = "$deployUser@$deployHost"
 
     Write-Step "Preparando diretorio remoto"
@@ -261,9 +281,9 @@ try {
     Write-Step "Enviando artefatos para $deployHost"
     Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @($jar.FullName, "${remote}:$deployPath/$($jar.Name)"))
     Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @($sha256File, "${remote}:$deployPath/$($jar.Name).sha256"))
-    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $deployDir "docker-compose.yml"), "${remote}:$deployPath/docker-compose.yml"))
-    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $deployDir "Caddyfile"), "${remote}:$deployPath/Caddyfile"))
-    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $deployDir "README.md"), "${remote}:$deployPath/README.md"))
+    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $buildDeployDir "docker-compose.yml"), "${remote}:$deployPath/docker-compose.yml"))
+    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $buildDeployDir "Caddyfile"), "${remote}:$deployPath/Caddyfile"))
+    Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @((Join-Path $buildDeployDir "README.md"), "${remote}:$deployPath/README.md"))
     Invoke-Native -FilePath "scp" -Arguments ($scpArgs + @($deployEnvFile, "${remote}:$deployPath/.env"))
 
     Write-Step "Reiniciando stack remota"
@@ -307,12 +327,19 @@ exit 1
         Test-PublicLogin -Url $publicLoginUrl
     }
 
+    if (-not (Test-Path -LiteralPath (Split-Path -Parent $deployStampPath))) {
+        New-Item -ItemType Directory -Path (Split-Path -Parent $deployStampPath) | Out-Null
+    }
+    Set-Content -LiteralPath $deployStampPath -Value $commitSha -NoNewline
+
     Write-Step "Deploy concluido no commit $commitSha"
 } finally {
-    Pop-Location
-
     if (Test-Path -LiteralPath $deployEnvFile) {
         Remove-Item -LiteralPath $deployEnvFile -Force
+    }
+
+    if ($temporaryWorktree -and (Test-Path -LiteralPath $temporaryWorktree)) {
+        Invoke-Native -FilePath "git" -Arguments @("-C", $repoRoot, "worktree", "remove", "--force", $temporaryWorktree)
     }
 
     foreach ($tempFile in $tempFiles) {

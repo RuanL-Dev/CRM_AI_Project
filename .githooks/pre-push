@@ -1,0 +1,21 @@
+#!/bin/sh
+
+head_commit="$(git rev-parse --short HEAD 2>/dev/null)"
+deploy_stamp=".local/last-deployed-commit"
+
+if [ ! -f "$deploy_stamp" ]; then
+  echo "Push bloqueado: ainda nao existe registro de deploy local bem-sucedido para este clone." >&2
+  echo "Execute: pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\deploy-on-commit.ps1" >&2
+  exit 1
+fi
+
+last_deployed="$(tr -d '\r\n' < "$deploy_stamp")"
+
+if [ "$head_commit" != "$last_deployed" ]; then
+  echo "Push bloqueado: o HEAD ($head_commit) ainda nao foi deployado com sucesso neste clone." >&2
+  echo "Ultimo commit deployado: $last_deployed" >&2
+  echo "Execute: pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\deploy-on-commit.ps1" >&2
+  exit 1
+fi
+
+exit 0

@@ -32,14 +32,12 @@ Thumbs.db
 .agent/
 .aiox-core/
 .antigravity/
+.aiox/
 .claude/
 .codex/
 .cursor/
 .gemini/
-.github/*
-!.github/agents/
-!.github/agents/**
-!.github/copilot-instructions.md
+.github/
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt
