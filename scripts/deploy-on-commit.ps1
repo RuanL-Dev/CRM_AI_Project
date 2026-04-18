@@ -194,9 +194,11 @@ function Test-PublicLogin {
     throw "O endpoint publico nao respondeu como esperado: $Url"
 }
 
+$npmCommand = if ($IsWindows) { "npm.cmd" } else { "npm" }
+
 Require-Command -Name "git"
 Require-Command -Name "mvn"
-Require-Command -Name "npm"
+Require-Command -Name $npmCommand
 Require-Command -Name "ssh"
 Require-Command -Name "scp"
 
@@ -266,7 +268,7 @@ try {
         Write-Step "Instalando dependencias do frontend no clone temporario"
         Push-Location (Join-Path $buildRoot "frontend")
         try {
-            Invoke-Native -FilePath "npm" -Arguments @("ci")
+            Invoke-Native -FilePath $npmCommand -Arguments @("ci")
         } finally {
             Pop-Location
         }
