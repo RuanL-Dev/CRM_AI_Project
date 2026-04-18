@@ -37,11 +37,13 @@ Thumbs.db
 .cursor/
 .gemini/
 .github/*
-!.github/workflows/
-!.github/workflows/**
 !.github/agents/
 !.github/agents/**
 !.github/copilot-instructions.md
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt
+
+# Local secret material
+.local/
+deploy/.env.production

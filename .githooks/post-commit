@@ -1,0 +1,10 @@
+#!/bin/sh
+
+pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File "./scripts/deploy-on-commit.ps1"
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo "Deploy pos-commit falhou. O commit foi criado, mas o servidor nao foi atualizado." >&2
+fi
+
+exit 0

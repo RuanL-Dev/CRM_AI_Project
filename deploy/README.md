@@ -1,40 +1,40 @@
 # Deploy
 
-Este diretório versiona a configuração de deploy usada para publicar o CRM no servidor.
+Este diretorio versiona a configuracao de deploy usada para publicar o CRM no servidor.
 
 Arquivos:
-- `docker-compose.yml`: sobe PostgreSQL e a aplicação Spring Boot em Docker
-- `.env.example`: modelo das variáveis exigidas em produção
-- `Caddyfile`: bloco de proxy reverso de exemplo para publicar o CRM em um domínio próprio
-- `.github/workflows/deploy-production.yml`: pipeline de build, publicação e restart via GitHub Actions
+- `docker-compose.yml`: sobe PostgreSQL e a aplicacao Spring Boot em Docker
+- `.env.example`: modelo das variaveis exigidas em producao
+- `Caddyfile`: bloco de proxy reverso de exemplo para publicar o CRM em um dominio proprio
+- `deploy.local.ps1.example`: modelo da configuracao local usada pelo script de deploy pos-commit
 
-Princípios:
-- nenhuma credencial real é versionada
+Principios:
+- nenhuma credencial real e versionada
 - o backend publica apenas em `127.0.0.1:8081`
-- o acesso público deve ser feito por um proxy reverso no host
-- o arquivo `.env` de produção é gerado a partir de GitHub Secrets durante o deploy
-- o deploy deve usar `CRM_APP_PROFILE=prod`; `dev` nao e permitido no workflow de producao
+- o acesso publico deve ser feito por um proxy reverso no host
+- o arquivo `.env` remoto e gerado localmente durante o deploy e removido do workspace ao final
+- o projeto nao usa mais GitHub Actions para publicar a aplicacao
 
-## GitHub Actions
+## Fluxo atual
 
-O deploy automático roda a cada push em `main` e executa:
+O deploy agora roda localmente a cada novo commit, via hook versionado em `.githooks/post-commit`, que chama `scripts/deploy-on-commit.ps1`.
 
-1. `npm ci` no frontend
-2. `mvn verify`
-3. upload do `jar` e dos arquivos versionados de deploy para o servidor
-4. refresh do `.env` remoto a partir dos GitHub Secrets
-5. validacao de checksum do `jar`
-6. `docker compose up -d --force-recreate crm-postgres crm-app`
+1. `mvn verify`
+2. upload do `jar` e dos arquivos versionados de deploy para o servidor
+3. refresh do `.env` remoto a partir da configuracao local em `.local/deploy.local.ps1`
+4. validacao de checksum do `jar`
+5. `docker compose up -d --force-recreate crm-postgres crm-app`
+6. validacao de `http://127.0.0.1:8081/healthz`
 7. validacao do endpoint publico `/login`
 
-### GitHub Secrets obrigatórios
+### Configuracao local obrigatoria
 
 - `CRM_DEPLOY_HOST`
 - `CRM_DEPLOY_PORT`
 - `CRM_DEPLOY_USER`
 - `CRM_DEPLOY_PATH`
-- `CRM_DEPLOY_SSH_PRIVATE_KEY`
-- `CRM_DEPLOY_KNOWN_HOSTS`
+- `CRM_DEPLOY_SSH_PRIVATE_KEY` ou `CRM_DEPLOY_SSH_KEY_PATH`
+- `CRM_DEPLOY_KNOWN_HOSTS` ou `CRM_DEPLOY_KNOWN_HOSTS_PATH`
 - `CRM_PUBLIC_LOGIN_URL`
 - `CRM_POSTGRES_DB`
 - `CRM_POSTGRES_USER`
@@ -50,19 +50,15 @@ O deploy automático roda a cada push em `main` e executa:
 - `N8N_RETRY_SCHEDULER_DELAY_MS`
 - `N8N_MAX_ATTEMPTS`
 
-### Recomendação operacional
+### Ativacao
 
-- Use uma chave SSH dedicada ao GitHub Actions, sem senha interativa, com escopo restrito ao deploy.
-- Armazene a fingerprint do host remoto em `CRM_DEPLOY_KNOWN_HOSTS`.
-- Não use segredos reais em `deploy/.env.example`, `docker-compose.yml` ou workflows versionados.
-- Rotacione imediatamente a chave SSH e as senhas de bootstrap/PostgreSQL se qualquer material sensivel local ou do runner for exposto.
-- As senhas de `CRM_POSTGRES_PASSWORD` e `CRM_APP_PASSWORD` devem ter pelo menos 12 caracteres, nao podem usar defaults fracos bloqueados e nao podem coincidir com o usuario associado.
-- Se o readiness falhar, o workflow agora publica `docker compose ps` e os logs recentes de `crm-postgres` e `crm-app` para acelerar o diagnostico.
-- O readiness interno do deploy usa `http://127.0.0.1:8081/healthz`; a validacao publica continua verificando a pagina de login exposta pelo proxy.
-- O checksum do `jar` e gerado com caminho relativo ao proprio artefato para que a validacao remota funcione no diretorio de deploy.
+1. Copie `deploy/deploy.local.ps1.example` para `.local/deploy.local.ps1`.
+2. Preencha as credenciais reais do servidor e da aplicacao.
+3. Ative o hook com `git config core.hooksPath .githooks`.
+4. Faca um commit normal; o deploy sera executado ao final do commit.
 
 Passos esperados no servidor:
 1. Copiar `.env.example` para `.env` e preencher com segredos reais.
-2. Publicar o `jar` da aplicação no mesmo diretório do `docker-compose.yml`.
+2. Publicar o `jar` da aplicacao no mesmo diretorio do `docker-compose.yml`.
 3. Subir a stack com `docker-compose up -d`.
-4. Mesclar o bloco do `Caddyfile` ao Caddy do host e recarregar o serviço.
+4. Mesclar o bloco do `Caddyfile` ao Caddy do host e recarregar o servico.

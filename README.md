@@ -250,6 +250,25 @@ Testes presentes na base:
 
 ---
 
+## Deploy
+
+O projeto nao usa mais CI/CD em GitHub Actions para publicar a aplicacao.
+
+O deploy foi simplificado para um fluxo local:
+
+1. configure `.local/deploy.local.ps1` a partir de `deploy/deploy.local.ps1.example`
+2. ative o hook versionado com `git config core.hooksPath .githooks`
+3. faca um novo commit
+4. o hook `post-commit` executara `scripts/deploy-on-commit.ps1` e publicara no servidor `srv1588289.hstgr.cloud`
+
+Se precisar rodar manualmente sem esperar outro commit:
+
+```powershell
+pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy-on-commit.ps1
+```
+
+---
+
 ## Metodo AIOX
 
 Este repositorio opera com governanca AIOX:

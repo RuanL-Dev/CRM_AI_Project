@@ -1,0 +1,34 @@
+$deployConfig = @{
+    CRM_DEPLOY_HOST = "srv1588289.hstgr.cloud"
+    CRM_DEPLOY_PORT = "22"
+    CRM_DEPLOY_USER = "root"
+    CRM_DEPLOY_PATH = "/opt/crm-ai-project"
+    CRM_PUBLIC_LOGIN_URL = "https://srv1588289.hstgr.cloud/login"
+
+    CRM_POSTGRES_DB = "crm_ai_project"
+    CRM_POSTGRES_USER = "crm_app"
+    CRM_POSTGRES_PASSWORD = "substitua-por-uma-senha-forte"
+
+    CRM_APP_PROFILE = "prod"
+    CRM_APP_USERNAME = "crm-admin"
+    CRM_APP_PASSWORD = "substitua-por-uma-senha-forte"
+    CRM_BOOTSTRAP_ENABLED = "true"
+
+    N8N_WEBHOOK_URL = ""
+    N8N_CONNECT_TIMEOUT_MS = "2000"
+    N8N_READ_TIMEOUT_MS = "5000"
+    N8N_RETRY_DELAY_MS = "30000"
+    N8N_RETRY_SCHEDULER_DELAY_MS = "30000"
+    N8N_MAX_ATTEMPTS = "5"
+
+    # Informe um dos pares abaixo:
+    CRM_DEPLOY_SSH_KEY_PATH = ".local/github-actions-deploy"
+    CRM_DEPLOY_KNOWN_HOSTS = "substitua-pelo-conteudo-do-known_hosts"
+
+    # Alternativa para chave inline:
+    # CRM_DEPLOY_SSH_PRIVATE_KEY = @'
+    # -----BEGIN OPENSSH PRIVATE KEY-----
+    # ...
+    # -----END OPENSSH PRIVATE KEY-----
+    # '@
+}
