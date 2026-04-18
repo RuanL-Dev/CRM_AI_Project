@@ -9,6 +9,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $deployConfigPath = Join-Path $repoRoot ".local/deploy.local.ps1"
+$localRuntimeDir = Join-Path $repoRoot ".local/runtime"
 $deployDir = Join-Path $repoRoot "deploy"
 $targetDir = Join-Path $repoRoot "target"
 $deployStampPath = Join-Path $repoRoot ".local/last-deployed-commit"
@@ -249,7 +250,10 @@ try {
     $buildDeployDir = $deployDir
 
     if (-not $SkipBuild) {
-        $temporaryWorktree = Join-Path ([System.IO.Path]::GetTempPath()) ("crm-deploy-worktree-" + [guid]::NewGuid().ToString("N"))
+        if (-not (Test-Path -LiteralPath $localRuntimeDir)) {
+            New-Item -ItemType Directory -Path $localRuntimeDir | Out-Null
+        }
+        $temporaryWorktree = Join-Path $localRuntimeDir ("deploy-worktree-" + [guid]::NewGuid().ToString("N"))
         Write-Step "Criando worktree temporario do commit $commitSha"
         Invoke-Native -FilePath "git" -Arguments @("-C", $repoRoot, "worktree", "add", "--detach", $temporaryWorktree, $commitRef)
 
