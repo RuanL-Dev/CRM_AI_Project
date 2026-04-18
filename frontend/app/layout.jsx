@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "CRM AI Project",
-  description: "Frontend Next.js do CRM AI Project consumindo a API Spring Boot."
+  title: "AIOX Growth OS",
+  description: "Workspace de campanhas, segmentos, provedores SMTP e formularios publicos integrado ao CRM Spring Boot."
 };
 
 export default function RootLayout({ children }) {

@@ -40,7 +40,8 @@ public class SecurityConfig {
                 if (devH2ConsoleEnabled) {
                     auth.requestMatchers("/h2-console/**").permitAll();
                 }
-                auth.requestMatchers("/login", "/healthz", "/auth/**").permitAll()
+                auth.requestMatchers("/login", "/healthz", "/auth/**", "/formulario", "/formulario/**", "/api/public/**").permitAll()
+                    .requestMatchers("/ui/formulario/**").permitAll()
                     .requestMatchers("/ui/**", "/css/**", "/js/**", "/").hasRole("CRM_USER")
                     .requestMatchers("/api/**").hasRole("CRM_USER")
                     .anyRequest().authenticated();
@@ -70,6 +71,7 @@ public class SecurityConfig {
             )
             .csrf(csrf -> {
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                csrf.ignoringRequestMatchers("/api/public/**");
                 if (devH2ConsoleEnabled) {
                     csrf.ignoringRequestMatchers("/h2-console/**");
                 }

@@ -312,4 +312,324 @@
   .empty-state {
     @apply text-sm text-slate-500;
   }
+
+  .marketing-shell {
+    @apply min-h-screen;
+    background:
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.16), transparent 28%),
+      radial-gradient(circle at top right, rgba(103, 232, 249, 0.14), transparent 30%),
+      linear-gradient(180deg, #030712 0%, #07111f 48%, #040914 100%);
+  }
+
+  .marketing-grid {
+    @apply mx-auto flex max-w-[1500px] flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
+  }
+
+  .marketing-hero,
+  .marketing-panel,
+  .marketing-metric {
+    @apply overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl;
+    box-shadow: 0 24px 80px rgba(2, 6, 23, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .marketing-hero {
+    @apply grid gap-5 rounded-[34px] px-6 py-7 lg:grid-cols-[1.3fr_0.7fr];
+    background:
+      radial-gradient(circle at top left, rgba(103, 232, 249, 0.18), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.18), transparent 28%),
+      rgba(7, 17, 31, 0.88);
+  }
+
+  .marketing-kicker,
+  .marketing-section-tag {
+    @apply text-xs font-semibold uppercase tracking-[0.32em] text-cyan-300;
+  }
+
+  .marketing-title {
+    @apply mt-4 max-w-4xl font-display text-4xl font-semibold leading-tight text-white sm:text-5xl;
+  }
+
+  .marketing-copy {
+    @apply mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base;
+  }
+
+  .marketing-hero-actions {
+    @apply grid gap-3 self-start lg:self-center;
+  }
+
+  .marketing-link-button,
+  .marketing-primary-button,
+  .marketing-secondary-button,
+  .public-form-button {
+    @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition;
+  }
+
+  .marketing-link-button,
+  .marketing-primary-button,
+  .public-form-button {
+    background: linear-gradient(90deg, #67e8f9 0%, #2dd4bf 100%);
+    box-shadow: 0 18px 34px rgba(45, 212, 191, 0.24);
+    color: #04101d;
+  }
+
+  .marketing-link-button-secondary,
+  .marketing-secondary-button {
+    @apply border border-white/10 bg-slate-950/40 text-slate-200 hover:border-cyan-300/40 hover:text-cyan-100;
+  }
+
+  .marketing-feedback {
+    @apply rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100;
+  }
+
+  .marketing-feedback-error,
+  .public-form-error {
+    @apply border border-rose-400/30 bg-rose-400/10 text-rose-100;
+  }
+
+  .marketing-metrics-row {
+    @apply grid gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .marketing-metric {
+    @apply rounded-[28px] p-5;
+    background: linear-gradient(180deg, rgba(11, 24, 43, 0.9), rgba(5, 15, 29, 0.78));
+  }
+
+  .marketing-metric-label {
+    @apply text-xs uppercase tracking-[0.24em] text-slate-400;
+  }
+
+  .marketing-metric-value {
+    @apply mt-3 block font-display text-4xl text-white;
+  }
+
+  .marketing-metric-detail {
+    @apply mt-3 block text-sm leading-6 text-slate-400;
+  }
+
+  .marketing-columns {
+    @apply grid gap-6 xl:grid-cols-[1.15fr_0.85fr];
+  }
+
+  .marketing-panel {
+    @apply rounded-[30px] p-6;
+    background: linear-gradient(180deg, rgba(8, 17, 31, 0.94), rgba(7, 17, 31, 0.82));
+  }
+
+  .marketing-panel-large {
+    @apply min-w-0;
+  }
+
+  .marketing-panel-heading h2 {
+    @apply mt-2 font-display text-3xl font-semibold text-white;
+  }
+
+  .marketing-panel-heading p:last-child {
+    @apply mt-2 text-sm leading-6 text-slate-400;
+  }
+
+  .marketing-form,
+  .marketing-stack-list,
+  .marketing-question-list {
+    @apply mt-5 space-y-4;
+  }
+
+  .marketing-form-grid {
+    @apply grid gap-3 md:grid-cols-2;
+  }
+
+  .marketing-field {
+    @apply w-full rounded-2xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10;
+  }
+
+  .marketing-textarea {
+    @apply min-h-[110px];
+  }
+
+  .marketing-textarea-xl {
+    @apply min-h-[320px] font-mono text-xs;
+  }
+
+  .marketing-toggle-row,
+  .marketing-inline-actions {
+    @apply flex flex-wrap gap-3;
+  }
+
+  .marketing-toggle-row label,
+  .marketing-inline-check {
+    @apply inline-flex items-center gap-2 text-sm text-slate-300;
+  }
+
+  .marketing-card-list,
+  .marketing-contact-grid {
+    @apply mt-5 grid gap-3;
+  }
+
+  .marketing-card,
+  .marketing-stack-card,
+  .marketing-contact-card,
+  .marketing-question-card {
+    @apply rounded-[24px] border border-white/10 bg-slate-950/35 p-4;
+  }
+
+  .marketing-card,
+  .marketing-stack-head,
+  .marketing-delivery-row,
+  .marketing-question-toolbar {
+    @apply flex items-start justify-between gap-3;
+  }
+
+  .marketing-card p,
+  .marketing-stack-card p,
+  .marketing-contact-card p,
+  .marketing-contact-card span,
+  .marketing-contact-card small {
+    @apply mt-1 text-sm leading-6 text-slate-400;
+  }
+
+  .marketing-check-grid {
+    @apply grid gap-3 md:grid-cols-2;
+  }
+
+  .marketing-check-card {
+    @apply flex flex-col rounded-[22px] border border-white/10 bg-slate-950/35 p-4 text-sm text-slate-200;
+  }
+
+  .marketing-check-card input {
+    @apply mb-3;
+  }
+
+  .marketing-check-card small {
+    @apply mt-1 text-xs text-slate-500;
+  }
+
+  .marketing-badge {
+    @apply rounded-full border border-cyan-400/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-200;
+  }
+
+  .marketing-chip-wrap {
+    @apply mt-3 flex flex-wrap gap-2;
+  }
+
+  .marketing-chip {
+    @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300;
+  }
+
+  .marketing-email-preview {
+    @apply mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/50;
+  }
+
+  .marketing-delivery-list {
+    @apply mt-4 space-y-2;
+  }
+
+  .marketing-delivery-row small {
+    @apply text-xs text-slate-500;
+  }
+
+  .marketing-text-button,
+  .public-form-link {
+    @apply text-sm text-slate-400 transition hover:text-white;
+  }
+
+  .marketing-contact-grid {
+    @apply md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .public-form-shell {
+    @apply min-h-screen px-4 py-6 text-white;
+    background:
+      radial-gradient(circle at center, rgba(45, 212, 191, 0.22), transparent 24%),
+      radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 30%),
+      linear-gradient(180deg, #030712 0%, #02040a 100%);
+  }
+
+  .public-form-stage {
+    @apply mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col justify-between;
+  }
+
+  .public-form-meta {
+    @apply flex items-center justify-between py-2 text-sm text-slate-400;
+  }
+
+  .public-form-brand {
+    @apply text-xs uppercase tracking-[0.4em] text-cyan-300;
+  }
+
+  .public-form-counter {
+    @apply text-sm text-slate-500;
+  }
+
+  .public-form-progress {
+    @apply mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/5;
+  }
+
+  .public-form-progress-bar {
+    @apply h-full rounded-full;
+    background: linear-gradient(90deg, #67e8f9 0%, #2dd4bf 100%);
+  }
+
+  .public-form-content {
+    @apply flex flex-1 flex-col justify-center py-10;
+  }
+
+  .public-form-caption {
+    @apply text-sm uppercase tracking-[0.28em] text-slate-500;
+  }
+
+  .public-form-title {
+    @apply mt-5 max-w-4xl font-display text-4xl font-semibold leading-tight text-white sm:text-6xl;
+  }
+
+  .public-form-description {
+    @apply mt-5 max-w-2xl text-base leading-8 text-slate-400;
+  }
+
+  .public-form-input {
+    @apply mt-12 w-full border-b border-cyan-300/40 bg-transparent px-0 py-4 text-2xl text-cyan-50 outline-none placeholder:text-slate-600 focus:border-cyan-300;
+  }
+
+  .public-form-textarea {
+    @apply min-h-[180px] resize-none;
+  }
+
+  .public-form-options {
+    @apply mt-12 grid gap-3 md:max-w-2xl;
+  }
+
+  .public-form-option {
+    @apply rounded-[22px] border border-white/10 bg-white/5 px-5 py-4 text-left text-lg text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-300/10;
+  }
+
+  .public-form-option-active {
+    @apply border-cyan-300/50 bg-cyan-300/15 text-white;
+  }
+
+  .public-form-actions {
+    @apply flex items-center justify-between gap-3 py-3;
+  }
+
+  .public-form-card {
+    @apply mx-auto flex min-h-[280px] max-w-3xl flex-col justify-center rounded-[36px] border border-white/10 bg-white/5 px-8 py-10 backdrop-blur-xl;
+  }
+
+  .public-form-success {
+    background:
+      radial-gradient(circle at top left, rgba(103, 232, 249, 0.16), transparent 36%),
+      rgba(255, 255, 255, 0.05);
+  }
+
+  .public-form-loading {
+    @apply flex min-h-screen items-center justify-center bg-[#030712] text-slate-300;
+  }
+
+  @media (max-width: 768px) {
+    .public-form-title {
+      @apply text-3xl;
+    }
+
+    .public-form-input {
+      @apply text-xl;
+    }
+  }
 }

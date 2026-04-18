@@ -7,8 +7,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface ContactRepository extends JpaRepository<Contact, Long> {
+
+    Optional<Contact> findByEmailIgnoreCase(String email);
 
     @Query("select c.status as status, count(c) as total from Contact c group by c.status")
     List<ContactStatusCountView> countGroupedByStatus();

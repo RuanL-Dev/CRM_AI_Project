@@ -10,4 +10,14 @@ public class DashboardController {
     public String dashboard() {
         return "forward:/ui/index.html";
     }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "forward:/ui/admin/index.html";
+    }
+
+    @GetMapping("/formulario")
+    public String formPage() {
+        return "forward:/ui/formulario/index.html";
+    }
 }

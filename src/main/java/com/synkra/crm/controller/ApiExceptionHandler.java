@@ -48,9 +48,25 @@ public class ApiExceptionHandler {
 
         if (causeMessage != null && causeMessage.toLowerCase().contains("email")) {
             message = "Já existe um contato cadastrado com este e-mail";
+        } else if (causeMessage != null && causeMessage.toLowerCase().contains("slug")) {
+            message = "Ja existe um formulario com esse slug";
+        } else if (causeMessage != null && causeMessage.toLowerCase().contains("segments_name_key")) {
+            message = "Ja existe um segmento com esse nome";
         }
 
         return Map.of("error", message);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> illegalArgument(IllegalArgumentException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> illegalState(IllegalStateException ex) {
+        return Map.of("error", ex.getMessage());
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
